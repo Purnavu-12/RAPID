@@ -1,52 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const plans = [
   {
     name: "Starter",
-    description: "For individuals and small projects",
-    price: { monthly: 0, annual: 0 },
+    description: "Up to ₹5L recovered revenue / month",
+    price: { monthly: "0", annual: "0" },
     features: [
-      "Up to 3 projects",
-      "1GB storage",
-      "Community support",
-      "Basic analytics",
-      "SSL certificates",
+      "Payment Link recovery",
+      "Automated dunning retries",
+      "Up to 3,000 recoveries/month",
+      "Standard audit trail",
+      "Email support",
     ],
     cta: "Start free",
     popular: false,
   },
   {
-    name: "Pro",
-    description: "For growing teams and businesses",
-    price: { monthly: 29, annual: 24 },
+    name: "Growth",
+    description: "Up to ₹50L recovered revenue / month",
+    price: { monthly: "12", annual: "10" },
     features: [
-      "Unlimited projects",
-      "100GB storage",
+      "All Starter features",
+      "AI diagnosis & recoverability scoring",
+      "Multi-channel recovery (SMS, WhatsApp, Email)",
+      "Custom policy rules",
       "Priority support",
-      "Advanced analytics",
-      "Custom domains",
-      "Team collaboration",
-      "API access",
+      "Recovery analytics",
     ],
     cta: "Start trial",
     popular: true,
   },
   {
     name: "Enterprise",
-    description: "For large-scale operations",
+    description: "Unlimited. Custom volume.",
     price: { monthly: null, annual: null },
     features: [
-      "Everything in Pro",
-      "Unlimited storage",
-      "24/7 dedicated support",
+      "All Growth features",
+      "Human escalation workflows",
       "Custom integrations",
-      "SLA guarantee",
-      "On-premise option",
-      "Security audit",
-      "Custom contracts",
+      "99.95% uptime SLA",
+      "24/7 dedicated support",
+      "Security & compliance audit",
     ],
     cta: "Contact sales",
     popular: false,
@@ -54,8 +50,6 @@ const plans = [
 ];
 
 export function PricingSection() {
-  const [isAnnual, setIsAnnual] = useState(true);
-
   return (
     <section id="pricing" className="relative py-32 lg:py-40 border-t border-foreground/10">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -65,46 +59,13 @@ export function PricingSection() {
             Pricing
           </span>
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight text-foreground mb-6">
-            Simple, transparent
+            Pay for what you
             <br />
-            <span className="text-stroke">pricing</span>
+            <span className="text-stroke">recover</span>.
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl">
-            Start free and scale as you grow. No hidden fees, no surprises.
+            No setup cost. No platform fees. You pay a small recovery share only on revenue we bring back to you.
           </p>
-        </div>
-
-        {/* Billing Toggle */}
-        <div className="flex items-center gap-4 mb-16">
-          <span
-            className={`text-sm transition-colors ${
-              !isAnnual ? "text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            Monthly
-          </span>
-          <button
-            onClick={() => setIsAnnual(!isAnnual)}
-            className="relative w-14 h-7 bg-foreground/10 rounded-full p-1 transition-colors hover:bg-foreground/20"
-          >
-            <div
-              className={`w-5 h-5 bg-foreground rounded-full transition-transform duration-300 ${
-                isAnnual ? "translate-x-7" : "translate-x-0"
-              }`}
-            />
-          </button>
-          <span
-            className={`text-sm transition-colors ${
-              isAnnual ? "text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            Annual
-          </span>
-          {isAnnual && (
-            <span className="ml-2 px-2 py-1 bg-foreground text-primary-foreground text-xs font-mono">
-              Save 17%
-            </span>
-          )}
         </div>
 
         {/* Pricing Cards */}
@@ -136,9 +97,9 @@ export function PricingSection() {
                 {plan.price.monthly !== null ? (
                   <div className="flex items-baseline gap-2">
                     <span className="font-display text-5xl lg:text-6xl text-foreground">
-                      ${isAnnual ? plan.price.annual : plan.price.monthly}
+                      ₹{plan.price.annual}/mo
                     </span>
-                    <span className="text-muted-foreground">/month</span>
+                    <span className="text-muted-foreground">on annual billing</span>
                   </div>
                 ) : (
                   <span className="font-display text-4xl text-foreground">Custom</span>
@@ -149,7 +110,7 @@ export function PricingSection() {
               <ul className="space-y-4 mb-10">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+                    <div className="w-4 h-4 mt-0.5 shrink-0 flex items-center justify-center text-primary">✓</div>
                     <span className="text-sm text-muted-foreground">{feature}</span>
                   </li>
                 ))}
@@ -172,9 +133,9 @@ export function PricingSection() {
 
         {/* Bottom Note */}
         <p className="mt-12 text-center text-sm text-muted-foreground">
-          All plans include automatic updates, HTTPS, and DDoS protection.{" "}
-          <a href="#" className="underline underline-offset-4 hover:text-foreground transition-colors">
-            Compare all features
+          All plans include tenant isolation, TLS in transit, encryption at rest, and an append-only audit trail.{" "}
+          <a href="/docs" className="underline underline-offset-4 hover:text-foreground transition-colors">
+            Review the architecture
           </a>
         </p>
       </div>

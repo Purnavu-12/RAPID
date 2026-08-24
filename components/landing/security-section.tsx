@@ -6,27 +6,27 @@ import { Shield, Lock, Eye, FileCheck } from "lucide-react";
 const securityFeatures = [
   {
     icon: Shield,
-    title: "SOC 2 Type II",
-    description: "Independently audited security controls with continuous monitoring.",
+    title: "Policy as the control boundary",
+    description: "Every externally visible action is gated by a deterministic, versioned policy engine. AI proposes, policy authorizes — the system never fails open.",
   },
   {
     icon: Lock,
-    title: "End-to-end encryption",
-    description: "AES-256 encryption for data at rest and TLS 1.3 in transit.",
+    title: "PCI-sensitive data minimization",
+    description: "Raw card numbers, CVV, and PINs are never stored. We keep provider references (payment_id, order_id) and route through hosted payment flows and Razorpay Payment Links.",
   },
   {
     icon: Eye,
-    title: "Zero-trust architecture",
-    description: "Every request is authenticated and authorized. No exceptions.",
+    title: "Zero raw-card retention",
+    description: "No money-moving decision is ever inferred from an LLM response alone. Financial state is authoritative — confirmed only by provider webhooks and API truth.",
   },
   {
     icon: FileCheck,
-    title: "GDPR & HIPAA",
-    description: "Full compliance with data protection and healthcare regulations.",
+    title: "Append-only audit ledger",
+    description: "Every transition — detection, diagnosis, decision, policy check, execution, outcome — is an immutable, traceable event. Tamper-evidenced with chained hashes.",
   },
 ];
 
-const certifications = ["SOC 2", "ISO 27001", "HIPAA", "GDPR", "CCPA"];
+const certifications = ["SOC 2", "PCI-DSS", "GDPR", "ISO 27001", "RBI"];
 
 export function SecuritySection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -61,11 +61,11 @@ export function SecuritySection() {
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
               Trust is
               <br />
-              non-negotiable.
+              <span className="text-primary">guarded by policy</span>,
+              not by guesswork.
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Enterprise-grade security isn&apos;t optional. It&apos;s built into every layer 
-              of our platform, from infrastructure to application.
+              We built the platform around the principle that safety cannot be an afterthought. Policy is evaluated before every action, financial state is always verified against the provider, and every recovery leaves a tamper-evident trail.
             </p>
 
             {/* Certifications */}
@@ -99,7 +99,7 @@ export function SecuritySection() {
                     <feature.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium mb-1 group-hover:translate-x-1 transition-transform duration-300">
+                    <h3 className="text-lg font-medium mb-1 group-hover:translate-x-2 transition-transform duration-300">
                       {feature.title}
                     </h3>
                     <p className="text-muted-foreground">{feature.description}</p>

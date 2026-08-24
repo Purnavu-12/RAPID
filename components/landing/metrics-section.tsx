@@ -46,28 +46,32 @@ function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffi
 
 const metrics = [
   { 
-    value: 2847392, 
-    suffix: "", 
+    value: 34, 
+    suffix: "%", 
     prefix: "",
-    label: "API requests today",
+    label: "Recovery rate",
+    category: "Business",
+  },
+  { 
+    value: 842, 
+    suffix: "K", 
+    prefix: "₹",
+    label: "Revenue recovered",
+    category: "Business",
+  },
+  { 
+    value: 7, 
+    suffix: "s", 
+    prefix: "",
+    label: "Avg. time to recovery",
+    category: "Business",
   },
   { 
     value: 99, 
-    suffix: ".99%", 
+    suffix: ".9%", 
     prefix: "",
-    label: "Uptime this quarter",
-  },
-  { 
-    value: 23, 
-    suffix: "ms", 
-    prefix: "",
-    label: "Average response time",
-  },
-  { 
-    value: 184, 
-    suffix: "", 
-    prefix: "",
-    label: "Countries served",
+    label: "Policy compliance",
+    category: "Safety",
   },
 ];
 
@@ -94,23 +98,23 @@ export function MetricsSection() {
   }, []);
 
   return (
-    <section id="studio" ref={sectionRef} className="relative py-24 lg:py-32 border-y border-foreground/10">
+    <section id="metrics" ref={sectionRef} className="relative py-24 lg:py-32 border-y border-foreground/10">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16 lg:mb-24">
           <div>
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
-              Live metrics
+              Live recovery metrics
             </span>
             <h2
               className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              Performance you
+              Measurable by
               <br />
-              can measure.
+              design.
             </h2>
           </div>
           <div className="flex items-center gap-4 font-mono text-sm text-muted-foreground">
@@ -138,9 +142,25 @@ export function MetricsSection() {
                 suffix={metric.suffix} 
                 prefix={metric.prefix}
               />
-              <div className="mt-4 text-lg text-muted-foreground">{metric.label}</div>
+              <div className="mt-4 flex items-center gap-3">
+                <span className="text-lg text-muted-foreground">{metric.label}</span>
+                <span className={`text-xs font-mono px-2 py-0.5 border border-foreground/10 ${
+                  metric.category === "Safety" ? "text-green-600" : "text-foreground/50"
+                }`}>
+                  {metric.category}
+                </span>
+              </div>
             </div>
           ))}
+        </div>
+
+        {/* Metric definition note */}
+        <div
+          className={`mt-12 text-sm text-muted-foreground transition-all duration-700 delay-300 ${
+            isVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          Recovery = authoritatively confirmed by provider webhooks, not by action dispatch. Recovery is declared only when financial state proves it.
         </div>
       </div>
     </section>
