@@ -5,45 +5,65 @@ import { useEffect, useRef, useState } from "react";
 const steps = [
   {
     number: "I",
-    title: "Connect your tools",
-    description: "Integrate with your existing stack in minutes. We support 200+ data sources out of the box.",
-    code: `import { optimus } from '@optimus/core'
-
-optimus.connect({
-  source: 'your-database',
-  sync: true
-})`,
+    title: "Risk Detection",
+    description:
+      "Ingest Razorpay webhooks and checkout/subscription events. Convert raw failures into normalized risk events — payment degradation, checkout abandonment, subscription failure, receivables aging.",
+    code: `{
+  "event_id": "risk_9f2a",
+  "risk_type": "payment_degradation",
+  "tenant_id": "merchant_123",
+  "customer_id": "cust_123",
+  "amount": 149900,
+  "currency": "INR",
+  "evidence": {
+    "failure_code": "insufficient_funds",
+    "attempt_count": 1
+  }
+}`,
   },
   {
     number: "II",
-    title: "Build your workflow",
-    description: "Design powerful automations with our visual builder or write code directly.",
-    code: `optimus.workflow('process', {
-  trigger: 'event',
-  actions: [
-    'validate',
-    'transform', 
-    'deliver'
-  ]
-})`,
+    title: "Root-Cause Diagnosis",
+    description:
+      "Known provider reason codes map directly; ambiguous signals pass to an AI diagnosis layer that returns a strict schema — root cause, confidence, and evidence codes. Never raw API commands.",
+    code: `{
+  "root_cause": "insufficient_funds",
+  "confidence": 0.92,
+  "evidence_codes": ["DECLINE_CODE_51"],
+  "recommended_action_class": "payment_link",
+  "reason_summary": "Balance-related failure; customer pays after short delay."
+}`,
   },
   {
     number: "III",
-    title: "Ship to production",
-    description: "Deploy globally with zero configuration. Your app goes live in under 30 seconds.",
-    code: `optimus.deploy({
-  target: 'production',
-  regions: 'auto'
-})
-
-// Deployed to 12 regions`,
+    title: "Decision + Policy Gate",
+    description:
+      "Recoverability prediction meets expected-value optimization. The agent recommends; the deterministic policy engine authorizes. AI proposes, policy decides — every action is bounded and traceable.",
+    code: `{
+  "decision": "ALLOW",
+  "action_class": "CREATE_PAYMENT_LINK",
+  "policy_version": "merchant_123:v7",
+  "reason_codes": ["RECOVERY_WINDOW_OPEN",
+    "ATTEMPT_LIMIT_NOT_REACHED"],
+  "requires_human_approval": false
+}`,
   },
+];
+
+const pipelineStages = [
+  "RiskEvent",
+  "Diagnosis",
+  "Decision",
+  "PolicyCheck",
+  "ActionScheduled",
+  "ActionExecuted",
+  "OutcomeObserved",
 ];
 
 export function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -88,16 +108,16 @@ export function HowItWorksSection() {
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-background/50 mb-6">
             <span className="w-8 h-px bg-background/30" />
-            Process
+            Recovery pipeline
           </span>
           <h2
             className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Three steps.
+            Detect. Diagnose.
             <br />
-            <span className="text-background/50">Infinite possibilities.</span>
+            <span className="text-background/50">Decide. Recover. Measure.</span>
           </h2>
         </div>
 
@@ -151,7 +171,7 @@ export function HowItWorksSection() {
                   <div className="w-3 h-3 rounded-full bg-background/20" />
                   <div className="w-3 h-3 rounded-full bg-background/20" />
                 </div>
-                <span className="text-xs font-mono text-background/40">workflow.ts</span>
+                <span className="text-xs font-mono text-background/40">event-model.json</span>
               </div>
 
               {/* Code content */}
@@ -187,9 +207,38 @@ export function HowItWorksSection() {
               {/* Status */}
               <div className="px-6 py-4 border-t border-background/10 flex items-center gap-3">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-xs font-mono text-background/40">Ready</span>
+                <span className="text-xs font-mono text-background/40">Append-only audit · Stage {activeStep + 1} of {steps.length}</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Full audit chain reference */}
+        <div
+          className={`mt-16 lg:mt-24 transition-all duration-700 delay-300 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <p className="font-mono text-xs text-background/40 uppercase tracking-widest mb-4">
+            The complete recovery chain is append-only and traceable
+          </p>
+          <div className="flex flex-wrap items-center gap-2 text-sm font-mono text-background/30">
+            {pipelineStages.map((stage, i) => (
+              <>
+                <span
+                  key={stage}
+                  className={`px-3 py-1 border border-background/10 transition-colors ${
+                    isVisible ? "opacity-100" : "opacity-0"
+                  }`}
+                  style={{ transitionDelay: `${i * 80}ms` }}
+                >
+                  {stage}
+                </span>
+                {i < pipelineStages.length - 1 && (
+                  <span className="text-background/20">→</span>
+                )}
+              </>
+            ))}
           </div>
         </div>
       </div>

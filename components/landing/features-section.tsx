@@ -5,241 +5,164 @@ import { useEffect, useRef, useState } from "react";
 const features = [
   {
     number: "01",
-    title: "Instant Deployment",
-    description: "Push to production in seconds. Our edge network ensures your applications load instantly, anywhere in the world.",
-    visual: "deploy",
+    title: "Payment degradation",
+    description: "Repeated declines, gateway timeouts, and issuer rejections. We classify the failure code, check current payment state, and decide what is recoverable versus terminal.",
+    evidence: ["payment.failed", "repeated declines", "gateway failures"],
+    visual: "payment",
   },
   {
     number: "02",
-    title: "AI-Native Workflows",
-    description: "Build intelligent applications with built-in AI capabilities. From inference to training, everything scales automatically.",
-    visual: "ai",
+    title: "Checkout abandonment",
+    description: "A cart started with no successful payment. Time-windowed detection that excludes bots and already-paid cases, then nudges the right customer at the right moment.",
+    evidence: ["checkout started", "no completion", "price shock"],
+    visual: "checkout",
   },
   {
     number: "03",
-    title: "Real-time Collaboration",
-    description: "Work together seamlessly. Live preview, instant feedback, and version control that actually makes sense.",
-    visual: "collab",
+    title: "Subscription failure",
+    description: "Recurring charges that fail or drift into a recovery state — balance shortages, mandate issues, bank rejections. Distinguished from initial failure by dunning history.",
+    evidence: ["recurring fails", "halted state", "mandate issues"],
+    visual: "subscription",
   },
   {
     number: "04",
-    title: "Enterprise Security",
-    description: "Bank-grade encryption, SOC 2 compliance, and granular access controls. Your data stays yours.",
-    visual: "security",
+    title: "Receivables aging",
+    description: "Invoices past their due date. Bucketed by overdue duration so the next collection stage is always the safest next step for the customer.",
+    evidence: ["past due date", "cash-flow delay", "approval delay"],
+    visual: "receivable",
   },
 ];
 
-function DeployVisual() {
+function PaymentVisual() {
   return (
     <svg viewBox="0 0 200 160" className="w-full h-full">
-      <defs>
-        <clipPath id="deployClip">
-          <rect x="30" y="20" width="140" height="120" rx="4" />
-        </clipPath>
-      </defs>
-      
-      {/* Container */}
-      <rect x="30" y="20" width="140" height="120" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
-      
-      {/* Animated bars */}
-      <g clipPath="url(#deployClip)">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <rect
-            key={i}
-            x="40"
-            y={35 + i * 16}
-            width="120"
-            height="10"
-            rx="2"
-            fill="currentColor"
-            opacity="0.15"
-          >
-            <animate
-              attributeName="opacity"
-              values="0.15;0.8;0.15"
-              dur="2s"
-              begin={`${i * 0.15}s`}
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="width"
-              values="20;120;20"
-              dur="2s"
-              begin={`${i * 0.15}s`}
-              repeatCount="indefinite"
-            />
-          </rect>
-        ))}
-      </g>
-      
-      {/* Progress indicator */}
-      <circle cx="100" cy="155" r="3" fill="currentColor" opacity="0.3">
-        <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" />
+      {/* Card */}
+      <rect x="30" y="45" width="140" height="90" rx="8" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="40" y="55" width="120" height="12" rx="2" fill="currentColor" opacity="0.15" />
+      <rect x="40" y="72" width="80" height="8" rx="2" fill="currentColor" opacity="0.1" />
+      {/* Chip */}
+      <rect x="40" y="45" width="28" height="20" rx="3" fill="currentColor" opacity="0.25" />
+      {/* Card number */}
+      <rect x="40" y="90" width="100" height="6" rx="2" fill="currentColor" opacity="0.1" />
+      {/* Warning cross */}
+      <line x1="140" y1="50" x2="170" y2="70" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+      <line x1="170" y1="50" x2="140" y2="70" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+      {/* Pulsing decay ring */}
+      <circle cx="155" cy="110" r="22" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.12">
+        <animate attributeName="r" values="22;30;22" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.12;0.35;0.12" dur="2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="155" cy="110" r="3" fill="currentColor" opacity="0.6">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
       </circle>
     </svg>
   );
 }
 
-function AIVisual() {
+function CheckoutVisual() {
   return (
     <svg viewBox="0 0 200 160" className="w-full h-full">
-      {/* Central node */}
-      <circle cx="100" cy="80" r="12" fill="currentColor">
-        <animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite" />
+      {/* Cart */}
+      <rect x="95" y="95" width="60" height="45" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
+      <line x1="95" y1="105" x2="155" y2="105" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
+      <line x1="95" y1="115" x2="155" y2="115" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
+      <line x1="95" y1="125" x2="155" y2="125" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
+      {/* Wheels */}
+      <circle cx="110" cy="150" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="140" cy="150" r="8" fill="none" stroke="currentColor" strokeWidth="2" />
+      {/* Handle */}
+      <line x1="155" y1="93" x2="168" y2="78" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      {/* Abandoned item */}
+      <rect x="40" y="40" width="36" height="46" rx="4" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.4" />
+      <line x1="58" y1="76" x2="58" y2="98" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+      {/* Cross out */}
+      <line x1="120" y1="45" x2="168" y2="45" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+      <line x1="144" y1="32" x2="144" y2="58" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+      {/* Floating dots (abandonment) */}
+      <circle cx="52" cy="38" r="2" fill="currentColor" opacity="0.4">
+        <animate attributeName="cy" values="38;30;38" dur="2.5s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite" />
       </circle>
-      
-      {/* Orbiting nodes */}
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const angle = (i * 60) * (Math.PI / 180);
-        const radius = 50;
-        return (
-          <g key={i}>
-            {/* Connection line */}
-            <line
-              x1="100"
-              y1="80"
-              x2={100 + Math.cos(angle) * radius}
-              y2={80 + Math.sin(angle) * radius}
-              stroke="currentColor"
-              strokeWidth="1"
-              opacity="0.3"
-            >
-              <animate
-                attributeName="opacity"
-                values="0.3;0.8;0.3"
-                dur="2s"
-                begin={`${i * 0.3}s`}
-                repeatCount="indefinite"
-              />
-            </line>
-            
-            {/* Outer node */}
-            <circle
-              cx={100 + Math.cos(angle) * radius}
-              cy={80 + Math.sin(angle) * radius}
-              r="6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <animate
-                attributeName="r"
-                values="6;8;6"
-                dur="2s"
-                begin={`${i * 0.3}s`}
-                repeatCount="indefinite"
-              />
-            </circle>
-          </g>
-        );
-      })}
-      
-      {/* Pulse rings */}
-      <circle cx="100" cy="80" r="30" fill="none" stroke="currentColor" strokeWidth="1" opacity="0">
-        <animate attributeName="r" values="20;60" dur="2s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0.5;0" dur="2s" repeatCount="indefinite" />
+      <circle cx="175" cy="50" r="2" fill="currentColor" opacity="0.4">
+        <animate attributeName="cx" values="175;180;175" dur="3s" repeatCount="indefinite" />
       </circle>
     </svg>
   );
 }
 
-function CollabVisual() {
+function SubscriptionVisual() {
   return (
     <svg viewBox="0 0 200 160" className="w-full h-full">
-      {/* User A */}
-      <g>
-        <rect x="30" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
-        <text x="55" y="85" textAnchor="middle" fontSize="20" fontFamily="monospace" fill="currentColor">A</text>
-        <circle cx="55" cy="35" r="12" fill="none" stroke="currentColor" strokeWidth="2" />
-      </g>
-      
-      {/* User B */}
-      <g>
-        <rect x="120" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
-        <text x="145" y="85" textAnchor="middle" fontSize="20" fontFamily="monospace" fill="currentColor">B</text>
-        <circle cx="145" cy="35" r="12" fill="none" stroke="currentColor" strokeWidth="2" />
-      </g>
-      
-      {/* Connection */}
-      <line x1="80" y1="80" x2="120" y2="80" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4">
-        <animate attributeName="stroke-dashoffset" values="0;-8" dur="0.5s" repeatCount="indefinite" />
-      </line>
-      
-      {/* Data packet */}
-      <circle r="4" fill="currentColor">
-        <animateMotion dur="1.5s" repeatCount="indefinite">
-          <mpath href="#dataPath" />
-        </animateMotion>
-      </circle>
-      <path id="dataPath" d="M 80 80 L 120 80" fill="none" />
-      
-      {/* Sync indicator */}
-      <g transform="translate(100, 130)">
-        <circle r="6" fill="none" stroke="currentColor" strokeWidth="2">
-          <animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
-        </circle>
-      </g>
-    </svg>
-  );
-}
-
-function SecurityVisual() {
-  return (
-    <svg viewBox="0 0 200 160" className="w-full h-full">
-      {/* Shield */}
-      <path
-        d="M 100 20 L 150 40 L 150 90 Q 150 130 100 145 Q 50 130 50 90 L 50 40 Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
+      {/* Circular recurring indicator */}
+      <circle cx="100" cy="80" r="50" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.25" />
+      <path d="M100 38 A50 50 0 0 1 150 80" fill="none" stroke="currentColor" strokeWidth="2" />
+      {/* Rotating arrow head */}
+      <polygon points="142,72 150,80 142,88" fill="currentColor" opacity="0.6" />
+      <animateTransform
+        attributeName="transform"
+        type="rotate"
+        from="0 100 80"
+        to="360 100 80"
+        dur="6s"
+        repeatCount="indefinite"
       />
-      
-      {/* Inner shield */}
-      <path
-        d="M 100 35 L 135 50 L 135 85 Q 135 115 100 128 Q 65 115 65 85 L 65 50 Z"
-        fill="currentColor"
-        opacity="0.1"
-      >
-        <animate attributeName="opacity" values="0.1;0.2;0.1" dur="2s" repeatCount="indefinite" />
-      </path>
-      
-      {/* Lock icon */}
-      <rect x="85" y="70" width="30" height="25" rx="3" fill="currentColor" />
-      <path
-        d="M 90 70 L 90 60 Q 90 50 100 50 Q 110 50 110 60 L 110 70"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      
-      {/* Keyhole */}
-      <circle cx="100" cy="80" r="4" fill="white" />
-      <rect x="98" y="82" width="4" height="8" fill="white" />
-      
-      {/* Scan lines */}
-      <line x1="60" y1="60" x2="140" y2="60" stroke="currentColor" strokeWidth="1" opacity="0">
-        <animate attributeName="y1" values="40;120;40" dur="3s" repeatCount="indefinite" />
-        <animate attributeName="y2" values="40;120;40" dur="3s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0;0.5;0" dur="3s" repeatCount="indefinite" />
-      </line>
+      {/* Inner node */}
+      <circle cx="100" cy="80" r="6" fill="currentColor" />
+      {/* Failure burst */}
+      <g>
+        <line x1="98" y1="80" x2="80" y2="78" stroke="currentColor" strokeWidth="1.5" opacity="0.45" />
+        <line x1="102" y1="80" x2="120" y2="82" stroke="currentColor" strokeWidth="1.5" opacity="0.45" />
+        <line x1="100" y1="76" x2="100" y2="60" stroke="currentColor" strokeWidth="1.5" opacity="0.45" />
+      </g>
+      {/* Status label */}
+      <text x="100" y="135" textAnchor="middle" fontSize="11" fontFamily="monospace" fill="currentColor" opacity="0.45">
+        halted / retry
+      </text>
+    </svg>
+  );
+}
+
+function ReceivableVisual() {
+  return (
+    <svg viewBox="0 0 200 160" className="w-full h-full">
+      {/* Invoice */}
+      <rect x="35" y="35" width="130" height="100" rx="6" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="45" y="45" width="110" height="8" rx="2" fill="currentColor" opacity="0.1" />
+      <rect x="45" y="60" width="90" height="6" rx="2" fill="currentColor" opacity="0.08" />
+      <rect x="45" y="72" width="110" height="6" rx="2" fill="currentColor" opacity="0.08" />
+      <rect x="45" y="84" width="70" height="6" rx="2" fill="currentColor" opacity="0.08" />
+      {/* Due date tag */}
+      <rect x="120" y="45" width="55" height="22" rx="3" fill="currentColor" opacity="0.08" />
+      <text x="147" y="60" textAnchor="middle" fontSize="11" fontFamily="monospace" fill="currentColor" opacity="0.5">
+        overdue
+      </text>
+      {/* Aging bars */}
+      <g transform="translate(45, 105)">
+        <rect width="16" height="22" fill="currentColor" opacity="0.15" />
+        <rect x="22" width="16" height="16" fill="currentColor" opacity="0.25" />
+        <rect x="44" width="16" height="10" fill="currentColor" opacity="0.4" />
+        <rect x="66" width="16" height="30" fill="currentColor" />
+      </g>
+      {/* Pulse on due-overdue */}
+      <circle cx="147" cy="56" r="3" fill="currentColor" opacity="0.5">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite" />
+      </circle>
     </svg>
   );
 }
 
 function AnimatedVisual({ type }: { type: string }) {
   switch (type) {
-    case "deploy":
-      return <DeployVisual />;
-    case "ai":
-      return <AIVisual />;
-    case "collab":
-      return <CollabVisual />;
-    case "security":
-      return <SecurityVisual />;
+    case "payment":
+      return <PaymentVisual />;
+    case "checkout":
+      return <CheckoutVisual />;
+    case "subscription":
+      return <SubscriptionVisual />;
+    case "receivable":
+      return <ReceivableVisual />;
     default:
-      return <DeployVisual />;
+      return <PaymentVisual />;
   }
 }
 
@@ -279,9 +202,16 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             <h3 className="text-3xl lg:text-4xl font-display mb-4 group-hover:translate-x-2 transition-transform duration-500">
               {feature.title}
             </h3>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-lg text-muted-foreground leading-relaxed mb-4">
               {feature.description}
             </p>
+            <ul className="flex flex-wrap gap-2 text-xs font-mono text-muted-foreground/60">
+              {feature.evidence.map((e) => (
+                <li key={e} className="px-2 py-1 border border-foreground/5">
+                  {e}
+                </li>
+              ))}
+            </ul>
           </div>
           
           {/* Visual */}
@@ -314,7 +244,7 @@ export function FeaturesSection() {
 
   return (
     <section
-      id="features"
+      id="platform"
       ref={sectionRef}
       className="relative py-24 lg:py-32"
     >
@@ -323,16 +253,16 @@ export function FeaturesSection() {
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
             <span className="w-8 h-px bg-foreground/30" />
-            Capabilities
+            Where revenue leaks
           </span>
           <h2
             className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Everything you need.
+            Every leak is a
             <br />
-            <span className="text-muted-foreground">Nothing you don&apos;t.</span>
+            <span className="text-muted-foreground">recovery opportunity.</span>
           </h2>
         </div>
 

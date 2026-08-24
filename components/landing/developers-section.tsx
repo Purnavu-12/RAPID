@@ -5,52 +5,66 @@ import { Copy, Check } from "lucide-react";
 
 const codeExamples = [
   {
-    label: "Install",
-    code: `npm install @optimus/sdk
+    label: "Webhook",
+    code: `// Razorpay webhook receiver — lightweight, no inference
+app.post("/v1/webhooks/razorpay", async (req, res) => {
+  const signature = req.headers["x-razorpay-signature"]
+  verifySignature(rawBody, signature, secret)
 
-# or
-yarn add @optimus/sdk
-pnpm add @optimus/sdk`,
-  },
-  {
-    label: "Initialize",
-    code: `import { Optimus } from '@optimus/sdk'
+  const event = dedupe(req.headers["x-razorpay-event-id"])
+  await persistRawEvent(event)        // object storage
+  await publish("raw.payment-events", event) // event bus
 
-const optimus = new Optimus({
-  apiKey: process.env.OPTIMUS_KEY
+  res.status(200).send("ok")
 })`,
   },
   {
-    label: "Deploy",
-    code: `const app = await optimus.deploy({
-  name: 'my-app',
-  region: 'auto',
-  scaling: {
-    min: 1,
-    max: 100
-  }
-})
+    label: "Event Schema",
+    code: `{
+  "event_id": "evt_9f2a",
+  "event_type": "payment.failed",
+  "schema_version": "1.0",
+  "tenant_id": "merchant_123",
+  "source": "razorpay",
+  "occurred_at": "2026-08-24T10:15:00Z",
+  "received_at": "2026-08-24T10:15:01Z",
+  "trace_id": "tr_82ad",
+  "correlation_id": "case_123",
+  "payload": {}
+}`,
+  },
+  {
+    label: "API",
+    code: `# Fetch open recovery cases
+GET /v1/recovery/cases?status=OPEN
+Idempotency-Key: case-query-73c7
 
-console.log('Live at:', app.url)`,
+# Approve a high-value recovery
+POST /v1/recovery/cases/case_123/approve
+Idempotency-Key: approve-case_123
+
+# Publish a new policy version
+POST /v1/policies
+Content-Type: application/json`,
   },
 ];
 
 const features = [
   { 
-    title: "TypeScript native", 
-    description: "Full type safety with auto-generated types."
+    title: "Webhook-first", 
+    description: "Lightweight receiver. No inference in the request path."
   },
   { 
-    title: "Zero config", 
-    description: "Sensible defaults that just work."
+    title: "Idempotent", 
+    description: "Every event and action has a deterministic key."
   },
   { 
-    title: "Edge-ready", 
-    description: "Runs anywhere: Node, Deno, Bun, browsers."
+    title: "Replayable", 
+    description: "Events persist raw + normalized for replay."
   },
   { 
-    title: "12KB gzipped", 
-    description: "Lightweight with zero dependencies."
+    title: "Versioned APIs", 
+    description: "Stable, schema-versioned contracts."
   },
 ];
 
@@ -122,13 +136,12 @@ export function DevelopersSection() {
               For developers
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Built by devs.
+              Built for ops.
               <br />
-              <span className="text-muted-foreground">For devs.</span>
+              <span className="text-muted-foreground">Designed for safety.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-              A thoughtfully designed SDK that gets out of your way. 
-              Ship faster with intuitive APIs and exceptional documentation.
+              A small webhook surface, idempotent execution, and versioned events you can replay at any time. No LLM in the request path — only in the bounded decision layer.
             </p>
             
             {/* Features */}
@@ -154,14 +167,14 @@ export function DevelopersSection() {
               isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
             }`}
           >
-            <div className="border border-foreground/10">
+            <div className="border border-foreground/10 overflow-hidden">
               {/* Tabs */}
               <div className="flex items-center border-b border-foreground/10">
                 {codeExamples.map((example, idx) => (
                   <button
                     key={example.label}
                     type="button"
-                    onClick={() => setActiveTab(idx)}
+                    onClick={() => { setActiveTab(idx); setCopied(false); }}
                     className={`px-6 py-4 text-sm font-mono transition-colors relative ${
                       activeTab === idx
                         ? "text-foreground"
@@ -190,7 +203,7 @@ export function DevelopersSection() {
               </div>
               
               {/* Code content */}
-              <div className="p-8 font-mono text-sm bg-foreground/[0.01] min-h-[220px]">
+              <div className="p-8 font-mono text-sm bg-foreground/[0.01] min-h-[240px]">
                 <pre className="text-foreground/80">
                   {codeExamples[activeTab].code.split('\n').map((line, lineIndex) => (
                     <div 
@@ -198,6 +211,7 @@ export function DevelopersSection() {
                       className="leading-loose dev-code-line"
                       style={{ animationDelay: `${lineIndex * 80}ms` }}
                     >
+                      <span className="text-foreground/20 select-none w-8 inline-block">{lineIndex + 1}</span>
                       <span className="inline-flex">
                         {line.split('').map((char, charIndex) => (
                           <span
@@ -219,12 +233,12 @@ export function DevelopersSection() {
             
             {/* Links */}
             <div className="mt-6 flex items-center gap-6 text-sm">
-              <a href="#" className="text-foreground hover:underline underline-offset-4">
-                Read the docs
+              <a href="/docs" className="text-foreground hover:underline underline-offset-4">
+                Read the full docs
               </a>
               <span className="text-foreground/20">|</span>
               <a href="#" className="text-muted-foreground hover:text-foreground">
-                View on GitHub
+                API Reference
               </a>
             </div>
           </div>

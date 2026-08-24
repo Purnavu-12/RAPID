@@ -3,18 +3,18 @@
 import { useEffect, useState, useRef } from "react";
 
 const integrations = [
-  { name: "GitHub", category: "Version Control" },
-  { name: "Slack", category: "Communication" },
+  { name: "Razorpay", category: "Payments" },
   { name: "Stripe", category: "Payments" },
+  { name: "PayPal", category: "Payments" },
+  { name: "Email", category: "Messaging" },
+  { name: "SMS", category: "Messaging" },
+  { name: "WhatsApp", category: "Messaging" },
   { name: "PostgreSQL", category: "Database" },
   { name: "Redis", category: "Cache" },
-  { name: "AWS", category: "Cloud" },
-  { name: "MongoDB", category: "Database" },
-  { name: "Vercel", category: "Hosting" },
-  { name: "Figma", category: "Design" },
-  { name: "Linear", category: "Project Management" },
-  { name: "Notion", category: "Documentation" },
-  { name: "OpenAI", category: "AI/ML" },
+  { name: "ClickHouse", category: "Analytics" },
+  { name: "S3", category: "Object Storage" },
+  { name: "Kafka", category: "Event Bus" },
+  { name: "Vault", category: "Secrets" },
 ];
 
 export function IntegrationsSection() {
@@ -48,12 +48,12 @@ export function IntegrationsSection() {
             <span className="w-8 h-px bg-foreground/30" />
           </span>
           <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-6">
-            Works with everything
+            Works with your
             <br />
-            you already use.
+            existing stack.
           </h2>
           <p className="text-xl text-muted-foreground">
-            200+ pre-built integrations. Connect your entire stack in minutes.
+            Payment providers, messaging channels, and data stores — all connected through isolated, versioned adapters.
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export function IntegrationsSection() {
       
       {/* Full-width marquees outside container */}
       <div className="w-full mb-6">
-        <div className="flex gap-6 marquee">
+        <div className="flex gap-6 marquee whitespace-nowrap">
           {[...Array(2)].map((_, setIndex) => (
             <div key={setIndex} className="flex gap-6 shrink-0">
               {integrations.map((integration) => (

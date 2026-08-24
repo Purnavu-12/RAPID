@@ -4,32 +4,32 @@ import { useEffect, useState } from "react";
 
 const testimonials = [
   {
-    quote: "Optimus transformed our deployment pipeline. What used to take hours now happens in seconds.",
-    author: "Sarah Chen",
-    role: "CTO",
-    company: "Meridian Labs",
-    metric: "10x faster deployments",
+    quote: "RAPID recovered revenue we'd already written off. The incremental recovery alone paid for the platform in month one.",
+    author: "Priya Mehta",
+    role: "Head of Payments",
+    company: "Acme Retail",
+    metric: "+34% recovery rate",
   },
   {
-    quote: "The developer experience is unmatched. Our team's productivity has never been higher.",
-    author: "Marcus Webb",
+    quote: "The policy gate gives us confidence. No more guessing whether a retry is safe — every action is explainable and reversible.",
+    author: "Arjun Rao",
     role: "Engineering Lead",
-    company: "Flux Systems",
-    metric: "40% more features shipped",
+    company: "Globex Corp",
+    metric: "0 policy violations",
   },
   {
-    quote: "Finally, infrastructure that scales with our ambition. Zero downtime since we switched.",
-    author: "Elena Rodriguez",
-    role: "VP Engineering",
-    company: "Beacon AI",
-    metric: "99.99% uptime",
+    quote: "Weeks of manual dunning automated, with a full audit trail regulators were happy to sign off on.",
+    author: "Fatima Alam",
+    role: "Finance Director",
+    company: "Initech",
+    metric: "90% dunning automated",
   },
   {
-    quote: "The integrations are seamless. We connected our entire stack in a single afternoon.",
-    author: "James Liu",
-    role: "Founder",
-    company: "Prism Analytics",
-    metric: "50+ integrations used",
+    quote: "Finally, recovery that respects our customers. Communication windows and cooldowns are enforced, not hacked.",
+    author: "David Kim",
+    role: "Head of Revenue",
+    company: "Umbrella Inc",
+    metric: "28% fewer chargebacks",
   },
 ];
 
@@ -56,7 +56,7 @@ export function TestimonialsSection() {
         {/* Section Label */}
         <div className="flex items-center gap-4 mb-16">
           <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-            What people say
+            What teams say
           </span>
           <div className="flex-1 h-px bg-foreground/10" />
           <span className="font-mono text-xs text-muted-foreground">
@@ -73,7 +73,7 @@ export function TestimonialsSection() {
               }`}
             >
               <p className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-tight text-foreground">
-                "{activeTestimonial.quote}"
+                &ldquo;{activeTestimonial.quote}&rdquo;
               </p>
             </blockquote>
 
@@ -107,7 +107,7 @@ export function TestimonialsSection() {
               <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase block mb-4">
                 Key Result
               </span>
-              <p className="font-display text-3xl md:text-4xl text-foreground">
+              <p className="font-display text-3xl md:text-4xl text-primary">
                 {activeTestimonial.metric}
               </p>
             </div>
@@ -138,7 +138,7 @@ export function TestimonialsSection() {
         {/* Company Logos Marquee Label */}
         <div className="mt-24 pt-12 border-t border-foreground/10">
           <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase mb-8 text-center">
-            Trusted by forward-thinking teams
+            Trusted by payment, subscription, and e-commerce merchants
           </p>
         </div>
       </div>
@@ -148,7 +148,7 @@ export function TestimonialsSection() {
         <div className="flex gap-16 items-center marquee">
           {[...Array(2)].map((_, setIdx) => (
             <div key={setIdx} className="flex gap-16 items-center shrink-0">
-              {["Meridian Labs", "Flux Systems", "Beacon AI", "Prism Analytics", "Nova Tech", "Quantum Corp", "Atlas Digital", "Vertex Labs"].map(
+              {["Acme Retail", "Globex Corp", "Initech", "Umbrella Inc", "Hooli", "Stark Industries", "Atlas Digital", "Vertex Labs"].map(
                 (company) => (
                   <span
                     key={`${setIdx}-${company}`}

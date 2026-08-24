@@ -1,23 +1,24 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { AnimatedWave } from "./animated-wave";
 
 const footerLinks = {
   Product: [
-    { name: "Features", href: "#features" },
+    { name: "Features", href: "#platform" },
     { name: "How it works", href: "#how-it-works" },
     { name: "Pricing", href: "#pricing" },
     { name: "Integrations", href: "#integrations" },
   ],
   Developers: [
-    { name: "Documentation", href: "#developers" },
-    { name: "API Reference", href: "#" },
-    { name: "SDK", href: "#developers" },
+    { name: "Documentation", href: "/docs" },
+    { name: "API Reference", href: "/docs#api" },
+    { name: "Webhooks", href: "/docs#webhook" },
     { name: "Status", href: "#" },
   ],
   Company: [
-    { name: "About", href: "#" },
+    { name: "About", href: "/about" },
     { name: "Blog", href: "#" },
     { name: "Careers", href: "#", badge: "Hiring" },
     { name: "Contact", href: "#" },
@@ -49,13 +50,13 @@ export function FooterSection() {
           <div className="grid grid-cols-2 md:grid-cols-6 gap-12 lg:gap-8">
             {/* Brand Column */}
             <div className="col-span-2">
-              <a href="#" className="inline-flex items-center gap-2 mb-6">
-                <span className="text-2xl font-display">Optimus</span>
-                <span className="text-xs text-muted-foreground font-mono">TM</span>
-              </a>
+              <Link href="/" className="inline-flex items-center gap-2 mb-6">
+                <span className="text-2xl font-display">RAPID</span>
+                <span className="text-xs text-muted-foreground font-mono">Revenue Autopilot</span>
+              </Link>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
-                The platform for teams who ship. Build, deploy, and scale with unprecedented velocity.
+                Revenue Autopilot for Intelligent Payment Recovery. Recover lost revenue automatically — AI diagnosed, policy guarded, Razorpay powered.
               </p>
 
               {/* Social Links */}
@@ -102,7 +103,7 @@ export function FooterSection() {
         {/* Bottom Bar */}
         <div className="py-8 border-t border-foreground/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            2025 Optimus. All rights reserved.
+            2025 RAPID. All rights reserved.
           </p>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
