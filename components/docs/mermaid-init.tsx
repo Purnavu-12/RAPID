@@ -30,7 +30,7 @@ export function MermaidInit() {
         // Convert each <pre><code class="language-mermaid"> into a
         // <div class="mermaid"> so mermaid.run() can render it.
         document
-          .querySelectorAll<HTMLPREElement>("pre code.language-mermaid")
+          .querySelectorAll<HTMLElement>("pre code.language-mermaid")
           .forEach((code) => {
             const pre = code.closest("pre");
             if (!pre) return;
