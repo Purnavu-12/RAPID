@@ -1,0 +1,227 @@
+/* ── Docs prose (renders docs/RAPID.md) ────────────────────────────────
+   Raw CSS only (no @apply), so it doesn't depend on a utility layer in
+   another stylesheet. Colors use the design-system tokens and an
+   emerald/amber finance palette.
+───────────────────────────────────────────────────────────────────────── */
+
+.md-content {
+  color: oklch(0.12 0.01 60);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 65ch;
+}
+
+.md-content :where(h1, h2, h3, h4) {
+  font-family: var(--font-display, "Instrument Serif", Georgia, serif);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: oklch(0.12 0.01 60);
+}
+.md-content :where(h1) {
+  font-size: 2.25rem;
+  margin: 2.5rem 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid oklch(0.88 0.01 90);
+}
+.md-content :where(h2) {
+  font-size: 1.6rem;
+  margin: 2.25rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid oklch(0.92 0.01 90);
+}
+.md-content :where(h3) {
+  font-size: 1.25rem;
+  margin: 1.75rem 0 0.75rem;
+}
+.md-content :where(h4) {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.md-content :where(p) {
+  margin: 0 0 1.25rem 0;
+}
+
+.md-content :where(ul, ol) {
+  margin: 0 0 1.25rem 0;
+  padding-left: 1.75rem;
+}
+.md-content :where(li) > p {
+  margin: 0.25rem 0;
+}
+
+.md-content :where(a) {
+  color: oklch(0.34 0.12 160);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.md-content :where(a:hover) {
+  color: oklch(0.3 0.12 160);
+}
+
+.md-content :where(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  overflow: hidden;
+}
+.md-content :where(th, td) {
+  border: 1px solid oklch(0.88 0.01 90);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.md-content :where(th) {
+  background: oklch(0.94 0.005 90);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.md-content :where(tr:nth-child(even)) td {
+  background: oklch(0.97 0.005 90);
+}
+
+.md-content :where(blockquote) {
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem 0.75rem 1.5rem;
+  border-left: 3px solid oklch(0.34 0.12 160);
+  background: oklch(0.96 0.005 90);
+  font-style: italic;
+}
+
+.md-content :where(code) {
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+/* inline code */
+.md-content :where(:not(pre) > code) {
+  color: oklch(0.12 0.01 60);
+  background: oklch(0.92 0.01 90);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  border: 1px solid oklch(0.88 0.01 90);
+}
+
+/* code blocks */
+.md-content :where(pre) {
+  position: relative;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  border: 1px solid oklch(0.88 0.01 90);
+  background: oklch(0.96 0.005 90);
+}
+.md-content :where(pre > code) {
+  display: block;
+  overflow-x: auto;
+  padding: 1rem 1.125rem;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+/* mermaid diagrams */
+.md-content :where(.mermaid) {
+  margin: 1.5rem 0;
+}
+.md-content :where(.mermaid) svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* prism token colors — theme-aware, no external theme required */
+.md-content :where(code .token.comment),
+.md-content :where(code .token.prolog),
+.md-content :where(code .token.doctype),
+.md-content :where(code .token.cdata) {
+  color: oklch(0.45 0.02 60);
+  font-style: italic;
+}
+.md-content :where(code .token.punctuation) {
+  color: oklch(0.3 0.02 60);
+}
+.md-content :where(code .token.property),
+.md-content :where(code .token.tag),
+.md-content :where(code .token.constant),
+.md-content :where(code .token.removed) {
+  color: oklch(0.55 0.23 25);
+}
+.md-content :where(code .token.boolean),
+.md-content :where(code .token.attr-name) {
+  color: oklch(0.65 0.15 55);
+}
+.md-content :where(code .token.string),
+.md-content :where(code .token.url),
+.md-content :where(code .token.attr-url) {
+  color: oklch(0.45 0.18 160);
+}
+.md-content :where(code .token.builtin),
+.md-content :where(code .token.symbol) {
+  color: oklch(0.5 0.22 260);
+}
+.md-content :where(code .token.selector) {
+  color: oklch(0.62 0.25 55);
+}
+.md-content :where(code .token.keyword) {
+  color: oklch(0.5 0.2 260);
+  font-weight: 600;
+}
+.md-content :where(code .token.function),
+.md-content :where(code .token.title) {
+  color: oklch(0.55 0.22 41);
+  font-weight: 700;
+}
+.md-content :where(code .token.operator) {
+  color: oklch(0.55 0.02 60);
+}
+.md-content :where(code .token.entity) {
+  color: oklch(0.6 0.18 30);
+}
+.md-content :where(code .token.important) {
+  color: oklch(0.62 0.25 30);
+  font-weight: 700;
+}
+
+/* ── Dark mode ─────────────────────────────────────────────────────── */
+.dark .md-content {
+  color: oklch(0.985 0.002 90);
+}
+.dark .md-content :where(h1, h2) {
+  border-color: oklch(0.21 0.01 60);
+  color: oklch(0.985 0.002 90);
+}
+.dark .md-content :where(th, td) {
+  border-color: oklch(0.21 0.01 60);
+}
+.dark .md-content :where(th) {
+  background: oklch(0.21 0.01 60);
+}
+.dark .md-content :where(tr:nth-child(even)) td {
+  background: oklch(0.18 0.01 60);
+}
+.dark .md-content :where(blockquote) {
+  background: oklch(0.18 0.01 60);
+  border-left-color: oklch(0.5 0.2 160);
+}
+.dark .md-content :where(:not(pre) > code) {
+  background: oklch(0.21 0.01 60);
+  border-color: oklch(0.269 0 0);
+}
+.dark .md-content :where(pre) {
+  background: oklch(0.18 0.01 60);
+  border-color: oklch(0.269 0 0);
+}
+.dark .md-content :where(a) {
+  color: oklch(0.5 0.2 160);
+}
+
+.md-content :where(.toc-toggle) {
+  color: oklch(0.55 0.02 60);
+}
+.dark .md-content :where(.toc-toggle) {
+  color: oklch(0.71 0.02 60);
+}
