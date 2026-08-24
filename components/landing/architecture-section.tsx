@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { AnimatedPipeline } from "./animated-pipeline";
 import { ArrowRight } from "lucide-react";
 
@@ -76,13 +77,13 @@ export function ArchitectureSection() {
             </div>
 
             <div className="mt-12">
-              <a
+              <Link
                 href="/docs"
                 className="inline-flex items-center gap-2 text-sm font-mono text-foreground hover:text-primary transition-colors"
               >
                 Read the full architecture
                 <ArrowRight className="w-4 h-4" />
-              </a>
+              </Link>
             </div>
           </div>
 

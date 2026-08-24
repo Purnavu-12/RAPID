@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const plans = [
   {
@@ -134,9 +135,9 @@ export function PricingSection() {
         {/* Bottom Note */}
         <p className="mt-12 text-center text-sm text-muted-foreground">
           All plans include tenant isolation, TLS in transit, encryption at rest, and an append-only audit trail.{" "}
-          <a href="/docs" className="underline underline-offset-4 hover:text-foreground transition-colors">
+          <Link href="/docs" className="underline underline-offset-4 hover:text-foreground transition-colors">
             Review the architecture
-          </a>
+          </Link>
         </p>
       </div>
     </section>

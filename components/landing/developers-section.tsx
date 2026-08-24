@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Copy, Check } from "lucide-react";
 
 const codeExamples = [
@@ -233,9 +234,9 @@ export function DevelopersSection() {
             
             {/* Links */}
             <div className="mt-6 flex items-center gap-6 text-sm">
-              <a href="/docs" className="text-foreground hover:underline underline-offset-4">
+              <Link href="/docs" className="text-foreground hover:underline underline-offset-4">
                 Read the full docs
-              </a>
+              </Link>
               <span className="text-foreground/20">|</span>
               <a href="#" className="text-muted-foreground hover:text-foreground">
                 API Reference
