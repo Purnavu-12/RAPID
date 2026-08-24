@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getDocSection, getDocSectionMetas, buildToc } from "@/lib/docs";
 import { DocsSidebar } from "@/components/docs/docs-sidebar";
 import { MermaidInit } from "@/components/docs/mermaid-init";
+import { CodeBlockEnhancer } from "@/components/docs/code-block-enhancer";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -51,6 +52,16 @@ export default async function DocSectionPage({
 
       {/* Chapter body */}
       <article className="md-content">
+        <nav aria-label="Breadcrumb" className="mb-8">
+          <ol className="flex items-center gap-2 text-xs font-mono text-muted-foreground/60">
+            <li><Link href="/docs" className="hover:text-foreground">Docs</Link></li>
+            <li className="w-3 h-px bg-foreground/20" />
+            <li className="text-muted-foreground/40 truncate" aria-current="page">
+              {section.title}
+            </li>
+          </ol>
+        </nav>
+
         <h1 id={section.slug} className="font-display text-3xl lg:text-4xl tracking-tight text-foreground mb-8 pb-4 border-b border-foreground/10">
           <span className="text-xs font-mono text-muted-foreground/60">
             {String(section.number ?? "").padStart(2, "0")}
@@ -63,8 +74,9 @@ export default async function DocSectionPage({
           dangerouslySetInnerHTML={{ __html: section.html ?? "" }}
         />
 
-        {/* Mermaid diagrams are client-rendered (lazy bundle). */}
+        {/* Client-side: render Mermaid diagrams and wire copy buttons. */}
         <MermaidInit />
+        <CodeBlockEnhancer />
 
         {/* Prev / Next */}
         <nav

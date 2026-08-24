@@ -3,12 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import { TrendingUp, Clock, IndianRupee, BarChart3 } from "lucide-react";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
+import type { RecoveryMetrics } from "@/lib/dashboard";
 
-const metrics = [
+interface MetricConfig {
+  id: keyof RecoveryMetrics;
+  label: string;
+  suffix?: string;
+  prefix?: string;
+  formatter?: (n: number) => string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconColor: string;
+  bg: string;
+  border: string;
+  sub: string;
+}
+
+const config: MetricConfig[] = [
   {
-    id: "recovery-rate",
+    id: "recoveryRate",
     label: "Recovery rate",
-    value: 34,
     suffix: "%",
     icon: TrendingUp,
     iconColor: "text-emerald-500",
@@ -19,10 +32,7 @@ const metrics = [
   {
     id: "recovered",
     label: "Revenue recovered",
-    value: 842,
-    prefix: "₹",
-    suffix: "K",
-    formatter: (n: number) => `₹${n.toLocaleString()}K`,
+    formatter: (n) => `₹${n.toLocaleString()}K`,
     icon: IndianRupee,
     iconColor: "text-primary",
     bg: "bg-primary/10",
@@ -30,12 +40,9 @@ const metrics = [
     sub: "this month",
   },
   {
-    id: "at-risk",
+    id: "atRisk",
     label: "Revenue at risk",
-    value: 210,
-    prefix: "₹",
-    suffix: "K",
-    formatter: (n: number) => `₹${n.toLocaleString()}K`,
+    formatter: (n) => `₹${n.toLocaleString()}K`,
     icon: BarChart3,
     iconColor: "text-amber-500",
     bg: "bg-amber-500/10",
@@ -45,7 +52,6 @@ const metrics = [
   {
     id: "latency",
     label: "Avg. time to recovery",
-    value: 7,
     suffix: "s",
     icon: Clock,
     iconColor: "text-blue-500",
@@ -55,7 +61,11 @@ const metrics = [
   },
 ];
 
-export function DashboardMetrics() {
+export function DashboardMetrics({
+  metrics,
+}: {
+  metrics: RecoveryMetrics | null;
+}) {
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -75,30 +85,41 @@ export function DashboardMetrics() {
       ref={ref}
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
     >
-      {metrics.map((m, i) => {
+      {config.map((m, i) => {
+        const value = metrics ? metrics[m.id] : null;
         const Icon = m.icon;
         return (
           <div
             key={m.id}
-            className={`p-6 border border-foreground/10 transition-all duration-700 ${
+            className={`relative p-6 border border-foreground/10 transition-all duration-700 ${
               visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
             style={{ transitionDelay: `${i * 80}ms` }}
           >
             <div className="flex items-start justify-between mb-4">
-              <div className={`w-10 h-10 flex items-center justify-center border ${m.border} ${m.bg} rounded-lg`}>
+              <div
+                className={`w-10 h-10 flex items-center justify-center border ${m.border} ${m.bg} rounded-lg`}
+              >
                 <Icon className={`w-5 h-5 ${m.iconColor}`} />
               </div>
-              <span className="text-xs font-mono text-muted-foreground">{m.id}</span>
+              <span className="text-xs font-mono text-muted-foreground/60">
+                {m.id}
+              </span>
             </div>
-            <div className="mb-1">
-              <AnimatedCounter
-                end={m.value}
-                suffix={m.suffix}
-                prefix={m.prefix}
-                formatter={m.formatter}
-              />
+
+            <div className="mb-1 h-8">
+              {value === null ? (
+                <div className="h-7 w-3/4 max-w-24 bg-foreground/5 rounded animate-pulse" />
+              ) : (
+                <AnimatedCounter
+                  end={value}
+                  suffix={m.suffix}
+                  prefix={m.prefix}
+                  formatter={m.formatter}
+                />
+              )}
             </div>
+
             <p className="text-sm text-muted-foreground">{m.label}</p>
             <p className="text-xs text-muted-foreground/60 mt-1">{m.sub}</p>
           </div>
