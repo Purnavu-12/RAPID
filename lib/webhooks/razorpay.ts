@@ -29,6 +29,7 @@
  * (https://razorpay.com/docs/webhooks/validate-test/)
  */
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { makeDecision } from "@/lib/policy/engine";
 import {
   createHmac,
   createHash,
@@ -196,47 +197,13 @@ export function diagnose(failureCode: string): {
   };
 }
 
-const HIGH_VALUE_THRESHOLD_MINOR = 500_000; // ₹5,000 — above this, escalate (§16 policy table)
-
 /**
- * Deterministic policy decision (§14 Decision Engine + §15 Policy Engine + §16).
- * No ML model required to start: the recoverability estimate is a stable
- * heuristic keyed off root cause and amount, comparable across experiments.
+ * §14 Decision Engine — now policy-driven (§4.3/§16). The decision is no
+ * longer hardcoded here: `makeDecision` loads the merchant's active
+ * `policy_versions` row (falling back to the v1.4 in-code policy) and
+ * evaluates it in `lib/policy/engine.ts`. The v1.4 values are reproduced
+ * exactly, so behaviour is preserved while the source of truth moves to data.
  */
-export function decide(rootCause: string, amountMinor: number): {
-  actionClass: string;
-  requiresHuman: boolean;
-  probability: number;
-  reasonCodes: string[];
-  expectedRecoveryMinor: number | null;
-} {
-  const isAmbiguous = rootCause === "Ambiguous";
-  const isHighValue = amountMinor > HIGH_VALUE_THRESHOLD_MINOR;
-
-  if (isHighValue || isAmbiguous) {
-    return {
-      actionClass: "ESCALATE_HUMAN",
-      requiresHuman: true,
-      probability: isHighValue ? 0.55 : 0.48,
-      reasonCodes: isHighValue
-        ? ["HIGH_VALUE_CASE", "AMOUNT_EXCEEDS_AUTO_LIMIT", "REQUIRES_HUMAN_REVIEW"]
-        : ["AMBIGUOUS_CASE", "REQUIRES_HUMAN_REVIEW"],
-      expectedRecoveryMinor: isHighValue ? amountMinor : null,
-    };
-  }
-
-  // Known, low-value failures → automated recovery action (§13 catalog).
-  const isRetryable = rootCause === "Gateway Failure" || rootCause === "Authentication";
-  const actionClass = isRetryable ? "RETRY_LATER" : "CREATE_PAYMENT_LINK";
-  const probability = actionClass === "CREATE_PAYMENT_LINK" ? 0.84 : 0.65;
-  return {
-    actionClass,
-    requiresHuman: false,
-    probability: Math.round(probability * 10000) / 10000,
-    reasonCodes: ["WITHIN_AUTO_LIMIT", "RECOVERY_WINDOW_OPEN", "POLICY_OK"],
-    expectedRecoveryMinor: actionClass === "CREATE_PAYMENT_LINK" ? amountMinor : null,
-  };
-}
 
 /** §4.2 / §28 idempotency key for a recovery action attempt. Stable + derivable
  *  from the case so duplicate deliveries/retries never double-mint a link. */
@@ -412,8 +379,12 @@ async function ingestFailure(
     .maybeSingle();
   if (dErr) throw dErr;
 
-  // §14 decision + §13 action.
-  const decision = decide(diag.rootCause, ev.amountMinor);
+  // §14 decision + §13 action — now policy-driven (§4.3/§16): loads the
+  // merchant's active policy_versions row (fallback v1.4) then evaluates it.
+  const decision = await makeDecision(supabase, ev.merchantId, {
+    rootCause: diag.rootCause,
+    amountMinor: ev.amountMinor,
+  });
   const { data: dec, error: decErr } = await supabase
     .from("decisions")
     .insert({
@@ -422,7 +393,7 @@ async function ingestFailure(
       attempt_no: 1,
       expected_recovery_minor: decision.expectedRecoveryMinor,
       probability_of_success: decision.probability,
-      policy_version: "v1.4",
+      policy_version: decision.policyLabel,
       decision_method: "rule",
       reason_codes: decision.reasonCodes,
       requires_human: decision.requiresHuman,

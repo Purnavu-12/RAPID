@@ -83,3 +83,20 @@ insert into outcomes (outcome_id, risk_event_id, action_id, status, recovered_am
 ('fa6352a1-03b2-4a7f-bb0c-d65390a6e1a3', '30820efe-89dc-4647-832a-ff5349e4d427', '5e3e4675-ad25-4d89-b0bd-101dc794f5a6', 'RECOVERED', 59900, '2026-08-20 12:05:00.000+00', '{"source":"razorpay.payment_link","reconciled":true}', '2026-08-20 12:06:00.000+00'),
 ('c545d6db-e217-4144-b804-4474c21e575d', 'dfc6c31c-a408-4edb-b390-0e8d97d15051', '18d4ac8a-551b-447a-90ce-37d74674224c', 'EXHAUSTED', 0, null, '{"reconciled":true}', '2026-08-19 09:21:00.000+00');
 
+-- §4.3 Wave 1.2 — seed Acme Retail's active recovery policy as DATA.
+-- Mirrors lib/policy/engine.ts DEFAULT_POLICY byte-for-byte. decide() now loads
+-- the merchant's active policy_versions row (falling back to DEFAULT_POLICY
+-- when absent → §4.7 graceful degradation). Idempotent on re-seed via the
+-- (merchant_id, version) unique constraint.
+insert into policy_versions (merchant_id, version, status, rules) values
+('850c3be5-d967-435f-848a-5e63af01bb98', 1, 'active',
+'{ "label": "v1.4", "version": 1, "high_value_threshold_minor": 500000,
+  "max_attempts": 3, "failure_window_seconds": 7200,
+  "retryable_root_causes": ["Gateway Failure", "Authentication"],
+  "probabilities": { "create_payment_link": 0.84, "retry_later": 0.65,
+                     "escalate_human_high_value": 0.55, "escalate_human_ambiguous": 0.48 } }')
+on conflict (merchant_id, version) do update set
+  status = excluded.status,
+  rules  = excluded.rules;
+
+
