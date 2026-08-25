@@ -32,7 +32,7 @@ export function DashboardShell() {
   const simulateStage: "failed" | "recovered" = openCaseExists
     ? "recovered"
     : "failed";
-  const simulateLabel = openCaseExists ? "Resolve last case" : "Simulate failed payment";
+  const simulateLabel = openCaseExists ? "Confirm recovery (test)" : "Record failed payment (test)";
 
   // Promise-chain form (not async/await) so the effect's state updates live
   // in deferred callbacks — this satisfies the react-hooks/set-state-in-effect
@@ -82,8 +82,12 @@ export function DashboardShell() {
         const short = json?.caseId?.slice(0, 8);
         setSimulateStatus(
           simulateStage === "failed"
-            ? `Simulated failed payment — new at-risk case ${short ? `…${short}` : ""}.`
-            : `Simulated recovery — case ${short ? `…${short}` : ""} marked RECOVERED.`
+            ? `Created real test order ${
+                json?.orderId ? `…${json.orderId.slice(-8)}` : ""
+              } — new at-risk case ${short ? `…${short}` : ""}.`
+            : `Confirmed recovery via payment link ${
+                json?.paymentLinkId ? `…${json.paymentLinkId.slice(-8)}` : ""
+              } — case ${short ? `…${short}` : ""} RECOVERED.`
         );
         fetchData();
       })
