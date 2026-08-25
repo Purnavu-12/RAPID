@@ -30,6 +30,7 @@
  */
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { makeDecision } from "@/lib/policy/engine";
+import { diagnoseAmbiguous, DiagnosisContext, getAiMetadata } from "@/lib/ai/gateway";
 import {
   createHmac,
   createHash,
@@ -361,8 +362,39 @@ async function ingestFailure(
   if (reErr) throw reErr;
   const riskEventId = re!.risk_event_id;
 
-  // §11.1 rule-first diagnosis.
-  const diag = diagnose(String(ev.evidence["failure_code"] || "ambiguous"));
+  // §11 — Hybrid diagnosis: rule-first (§11.1), then LLM for ambiguous (§11.2).
+  const ruleDiag = diagnose(String(ev.evidence["failure_code"] || "ambiguous"));
+  let diag = ruleDiag;
+  let aiMetadata: { model_version?: string; prompt_version?: string } = {};
+
+  // §11.2 LLM path — only when rule diagnosis is Ambiguous AND gateway is configured.
+  // §4.7 fail-safe: if LLM is unavailable/misconfigured, rule diagnosis stays as-is.
+  if (ruleDiag.rootCause === "Ambiguous") {
+    const ctx: DiagnosisContext = {
+      failureCode: String(ev.evidence["failure_code"] || "ambiguous"),
+      failureReason: String(ev.evidence["error_reason"] || ""),
+      amountMinor: ev.amountMinor,
+      currency: ev.currency,
+      attemptCount: Number(ev.evidence["attempt_count"] || 1),
+      customerRef: ev.customerRef,
+      orderRef: ev.sourceRef,
+    };
+    const llmResult = await diagnoseAmbiguous(ctx);
+    if (llmResult) {
+      diag = {
+        rootCause: llmResult.rootCause,
+        confidence: llmResult.confidence,
+        method: "llm",
+        evidenceCodes: [...llmResult.evidenceCodes, "LLM_DIAGNOSED"],
+        reasonSummary: llmResult.reasonSummary,
+      };
+      aiMetadata = {
+        model_version: llmResult.modelVersion,
+        prompt_version: llmResult.promptVersion,
+      };
+    }
+  }
+
   const { data: d, error: dErr } = await supabase
     .from("diagnoses")
     .insert({
@@ -370,8 +402,8 @@ async function ingestFailure(
       root_cause: diag.rootCause,
       confidence: diag.confidence,
       method: diag.method,
-      model_version: "diag-v1",
-      prompt_version: "prompt-v1",
+      model_version: aiMetadata.model_version || "diag-v1",
+      prompt_version: aiMetadata.prompt_version || "prompt-v1",
       evidence_codes: diag.evidenceCodes,
       reason_summary: diag.reasonSummary,
     })
