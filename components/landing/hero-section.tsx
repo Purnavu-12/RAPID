@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
+import { GuardrailsSection } from "./guardrails-section";
 
 const words = ["detect", "recover", "verify", "learn"];
 
@@ -77,10 +78,10 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
           >
-            <span className="block">Recover lost</span>
+            <span className="block">Payments fail.</span>
+            <span className="block">Revenue leaks.</span>
             <span className="block">
-              revenue. <span className="text-primary">Auto</span>
-              {"."}
+              RAPID <span className="text-primary">wins it back</span> — <span className="text-muted-foreground">autonomously and accountably.</span>
             </span>
           </h1>
           <p 
@@ -88,7 +89,7 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            RAPID detects at-risk payments, diagnoses the root cause with AI, chooses the safest high-value action, enforces policy guardrails, executes through Razorpay, and measures every recovery against a full audit trail.
+            RAPID detects at-risk payments, diagnoses the root cause with AI, chooses the safest high-value action, enforces policy guardrails, executes through Razorpay, and measures every recovery against provider truth with a complete audit trail.
           </p>
         </div>
         
@@ -114,7 +115,7 @@ export function HeroSection() {
             variant="outline"
             className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
           >
-            <Link href="/how-it-works">Watch product tour</Link>
+            <Link href="/demo">Watch guided demo</Link>
           </Button>
         </div>
       </div>
@@ -147,8 +148,14 @@ export function HeroSection() {
         </div>
       </div>
       
-      {/* Scroll indicator */}
-      
+      {/* Guardrails section (§17) — the safety boundary every action passes through */}
+      <div 
+        className={`absolute bottom-0 left-0 right-0 transition-all duration-700 delay-600 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
+        <GuardrailsSection />
+      </div>
     </section>
   );
 }

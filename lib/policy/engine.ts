@@ -44,6 +44,12 @@ export interface RecoveryPolicy {
 export interface DecisionContext {
   rootCause: string;
   amountMinor: number;
+  /**
+   * 1-based attempt number this decision would schedule (§24 attempt tracking).
+   * When it exceeds policy.max_attempts the §17#2 stopping rule fires and the
+   * engine returns MARK_EXHAUSTED instead of another intervention.
+   */
+  attemptNo?: number;
 }
 
 export interface Decision {
@@ -88,6 +94,21 @@ export function evaluate(
   ctx: DecisionContext
 ): Decision {
   const { rootCause, amountMinor } = ctx;
+
+  // §17 #2 Attempt cap — a hard maximum on recovery loops. This check dominates
+  // every other branch: once the attempt budget is spent the case stops, no
+  // matter how promising the diagnosis looks (never fail open into more contact).
+  const attemptNo = ctx.attemptNo ?? 1;
+  if (attemptNo > policy.max_attempts) {
+    return {
+      actionClass: "MARK_EXHAUSTED",
+      requiresHuman: false,
+      probability: 0,
+      reasonCodes: ["ATTEMPT_LIMIT_REACHED", "STOPPING_RULE_APPLIED"],
+      expectedRecoveryMinor: null,
+    };
+  }
+
   const isAmbiguous = rootCause === "Ambiguous";
   const isHighValue = amountMinor > policy.high_value_threshold_minor;
 
