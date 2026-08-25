@@ -1,33 +1,26 @@
 import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
+import { LiveRecoveryWidget } from "@/components/landing/live-recovery-widget";
 import { FeaturesSection } from "@/components/landing/features-section";
-import { HowItWorksSection } from "@/components/landing/how-it-works-section";
-import { InfrastructureSection } from "@/components/landing/infrastructure-section";
-import { ArchitectureSection } from "@/components/landing/architecture-section";
-import { MetricsSection } from "@/components/landing/metrics-section";
-import { IntegrationsSection } from "@/components/landing/integrations-section";
-import { SecuritySection } from "@/components/landing/security-section";
-import { DevelopersSection } from "@/components/landing/developers-section";
-import { TestimonialsSection } from "@/components/landing/testimonials-section";
-import { PricingSection } from "@/components/landing/pricing-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { FooterSection } from "@/components/landing/footer-section";
+
+/** Home — a focused entry point. Detailed topics live on their own multipage
+ * routes (/platform, /how-it-works, /pricing) so every topic has a real URL
+ * (shareable, indexable) instead of a single-scroll anchor page. */
+export const metadata = {
+  title: "RAPID — Revenue Autopilot for Intelligent Payment Recovery",
+  description:
+    "Recover lost revenue automatically. RAPID detects at-risk payments, diagnoses the root cause with AI, picks the safest highest-value action, enforces policy guardrails, executes through Razorpay, and measures every recovery with a full audit trail.",
+};
 
 export default function Home() {
   return (
     <main className="relative min-h-screen overflow-x-hidden noise-overlay">
       <Navigation />
       <HeroSection />
+      <LiveRecoveryWidget />
       <FeaturesSection />
-      <HowItWorksSection />
-      <InfrastructureSection />
-      <ArchitectureSection />
-      <MetricsSection />
-      <IntegrationsSection />
-      <SecuritySection />
-      <DevelopersSection />
-      <TestimonialsSection />
-      <PricingSection />
       <CtaSection />
       <FooterSection />
     </main>
