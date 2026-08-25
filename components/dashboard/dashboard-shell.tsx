@@ -4,9 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import { DashboardMetrics } from "@/components/dashboard/metrics-grid";
 import { RecoveryChart } from "@/components/dashboard/recovery-chart";
 import { CasesTable } from "@/components/dashboard/cases-table";
-import { ArrowLeft, RefreshCw, Clock, PlayCircle } from "lucide-react";
+import { ArrowLeft, RefreshCw, Clock, PlayCircle, Zap } from "lucide-react";
 import Link from "next/link";
 import type { RecoveryPayload } from "@/lib/dashboard";
+import type { ExecutedAction } from "@/lib/actions/executor";
 
 export function DashboardShell() {
   const [data, setData] = useState<RecoveryPayload | null>(null);
@@ -14,6 +15,8 @@ export function DashboardShell() {
   const [error, setError] = useState<string | null>(null);
   const [simulateStatus, setSimulateStatus] = useState<string | null>(null);
   const [simulateLoading, setSimulateLoading] = useState(false);
+  const [executeStatus, setExecuteStatus] = useState<string | null>(null);
+  const [executeLoading, setExecuteLoading] = useState(false);
 
   // The simulation harness is bound to the Acme Retail demo tenant and is only
   // exposed in development (docs/RAPID.md §47 integration test surface).
@@ -99,6 +102,31 @@ export function DashboardShell() {
       .finally(() => setSimulateLoading(false));
   };
 
+  const executeNow = () => {
+    setExecuteLoading(true);
+    fetch("/api/cron/execute-actions?due=true", { method: "POST" })
+      .then(async (res) => {
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+        return json;
+      })
+      .then((json: { count: number; executed?: ExecutedAction[] }) => {
+        const links = (json.executed || []).map((a) => a.short_url);
+        setExecuteStatus(
+          json.count === 0
+            ? "No due actions to execute."
+            : `Executed ${json.count} action(s). Real payment link(s) created: ${links.join(" ")}`
+        );
+        fetchData();
+      })
+      .catch((e: unknown) => {
+        setExecuteStatus(
+          `Execution failed: ${e instanceof Error ? e.message : String(e)}`
+        );
+      })
+      .finally(() => setExecuteLoading(false));
+  };
+
   const refreshLabel = loading ? "Refreshing…" : "Refresh";
 
   return (
@@ -176,7 +204,32 @@ export function DashboardShell() {
               {simulateLoading ? "Running…" : simulateLabel}
             </button>
           )}
+          {isDev && (
+            <button
+              type="button"
+              onClick={executeNow}
+              disabled={executeLoading}
+              className="inline-flex items-center gap-2 text-sm font-mono text-foreground bg-foreground/[0.06] border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/[0.10] px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {executeLoading ? (
+                <Zap className="w-3.5 h-3.5 animate-pulse" />
+              ) : (
+                <Zap className="w-3.5 h-3.5" />
+              )}
+              {executeLoading ? "Executing…" : "Execute now (dev)"}
+            </button>
+          )}
         </div>
+
+        {executeStatus && (
+          <p
+            role="status"
+            aria-live="polite"
+            className="mt-3 text-xs font-mono text-muted-foreground"
+          >
+            {executeStatus}
+          </p>
+        )}
 
         {simulateStatus && (
           <p
