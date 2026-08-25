@@ -5,6 +5,7 @@ import { DashboardMetrics } from "@/components/dashboard/metrics-grid";
 import { RecoveryChart } from "@/components/dashboard/recovery-chart";
 import { CasesTable } from "@/components/dashboard/cases-table";
 import { EscalationsTable } from "@/components/dashboard/escalations-table";
+import { ProofTab } from "@/components/dashboard/proof-tab";
 import { SimulationLab } from "@/components/dashboard/simulation-lab";
 import { ArrowLeft, RefreshCw, Clock, PlayCircle, Zap } from "lucide-react";
 import Link from "next/link";
@@ -135,7 +136,7 @@ export function DashboardShell() {
     <div className="min-h-screen bg-background text-foreground noise-overlay">
       {/* Top bar */}
       <header className="border-b border-foreground/10">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 h-14 flex items-center justify-between">
+        <div className="max-w-350 mx-auto px-6 lg:px-12 h-14 flex items-center justify-between">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -163,7 +164,7 @@ export function DashboardShell() {
         </div>
       </header>
 
-      <main className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12 lg:py-16">
+      <main className="max-w-350 mx-auto px-6 lg:px-12 py-12 lg:py-16">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12">
           <div>
@@ -184,7 +185,7 @@ export function DashboardShell() {
               fetchData();
             }}
             disabled={loading}
-            className="inline-flex items-center gap-2 text-sm font-mono text-foreground border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/[0.03] px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 text-sm font-mono text-foreground border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/3 px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
@@ -196,7 +197,7 @@ export function DashboardShell() {
               type="button"
               onClick={simulate}
               disabled={simulateLoading}
-              className="inline-flex items-center gap-2 text-sm font-mono text-foreground bg-foreground/[0.06] border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/[0.10] px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 text-sm font-mono text-foreground bg-foreground/6 border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10 px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {simulateLoading ? (
                 <PlayCircle className="w-3.5 h-3.5 animate-pulse" />
@@ -211,7 +212,7 @@ export function DashboardShell() {
               type="button"
               onClick={executeNow}
               disabled={executeLoading}
-              className="inline-flex items-center gap-2 text-sm font-mono text-foreground bg-foreground/[0.06] border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/[0.10] px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 text-sm font-mono text-foreground bg-foreground/6 border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10 px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {executeLoading ? (
                 <Zap className="w-3.5 h-3.5 animate-pulse" />
@@ -268,6 +269,13 @@ export function DashboardShell() {
         {isDev && (
           <section>
             <EscalationsTable />
+          </section>
+        )}
+
+        {/* §43 / §6 Batch Proof Runner — proves recovery lift with a report card */}
+        {isDev && (
+          <section>
+            <ProofTab />
           </section>
         )}
 
