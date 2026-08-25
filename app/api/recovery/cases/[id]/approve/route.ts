@@ -3,9 +3,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { resolveMerchantId } from "@/lib/webhooks/razorpay";
 import { appendAudit } from "@/lib/audit/ledger";
 import { buildIdempotencyKey } from "@/lib/webhooks/razorpay";
-import type { SupabaseClient } from "@/lib/supabase/server";
 
-type Supabase = SupabaseClient;
+type Supabase = ReturnType<typeof createServerSupabaseClient>;
 
 /**
  * POST /api/recovery/cases/{case_id}/approve

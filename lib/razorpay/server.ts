@@ -42,6 +42,10 @@ export interface CreatePaymentLinkResult extends RazorpayPaymentLink {
   callback_url?: string;
 }
 
+/** Alias used by the §5 reconciler for provider link matching.
+ *  Includes notes for idempotent matching by risk_event_id. */
+export type PaymentLink = RazorpayPaymentLink;
+
 function authHeader(): string {
   const id = process.env.RZP_KEY_ID;
   const secret = process.env.RZP_KEY_SECRET;
@@ -136,4 +140,29 @@ export async function fetchPaymentLink(
   return razorpay<RazorpayPaymentLink>(
     `/payment_links/${encodeURIComponent(id)}`
   );
+}
+
+interface ListPaymentLinksResult {
+  entity: {
+    entity: string;
+    count: number;
+    items: RazorpayPaymentLink[];
+  };
+}
+
+/**
+ * List recent payment links from the provider (§5.3 reconciler).
+ * Used to match UNKNOWN action outcomes — did the provider actually mint
+ * the link even though the executor got a timeout?
+ */
+export async function listPaymentLinks(opts: {
+  limit?: number;
+  notes?: Record<string, string>;
+}): Promise<RazorpayPaymentLink[]> {
+  const params = new URLSearchParams();
+  if (opts.limit) params.set("count", String(opts.limit));
+  const qs = params.toString();
+  const path = `/payment_links${qs ? `?${qs}` : ""}`;
+  const result = await razorpay<ListPaymentLinksResult>(path);
+  return result.entity?.items ?? [];
 }

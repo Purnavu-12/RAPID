@@ -49,7 +49,7 @@ const actionMeta: Record<string, { label: string; color: string; icon: ReactNode
   },
 };
 
-function formatAmount(minor: number, currency: string, symbol = "₹") {
+export function formatAmount(minor: number, currency: string, symbol = "₹") {
   const major = minor / 100;
   if (currency === "INR") {
     return `${symbol}${major.toLocaleString("en-IN")}`;

@@ -320,8 +320,8 @@ export function ProofTab() {
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {c.confidence != null
-                          ? `${Math.round(c.confidence * 100)}%`
+                        {c.probability != null
+                          ? `${Math.round(c.probability * 100)}%`
                           : "—"}
                       </td>
                     </tr>

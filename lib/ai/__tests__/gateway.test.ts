@@ -257,6 +257,7 @@ describe("diagnoseAmbiguous fail-safe behavior (§4.7)", () => {
   it("returns null when POOLSIDE_API_KEY is not configured (§4.7 graceful degradation)", async () => {
     const ctx: DiagnosisContext = {
       failureCode: "ambiguous",
+      failureReason: "",
       amountMinor: 59900,
       currency: "INR",
       attemptCount: 1,
@@ -294,6 +295,7 @@ describe("diagnoseAmbiguous fail-safe behavior (§4.7)", () => {
 
     const ctx: DiagnosisContext = {
       failureCode: "ambiguous",
+      failureReason: "",
       amountMinor: 59900,
       currency: "INR",
       attemptCount: 1,
@@ -314,6 +316,7 @@ describe("diagnoseAmbiguous fail-safe behavior (§4.7)", () => {
 
     const ctx: DiagnosisContext = {
       failureCode: "ambiguous",
+      failureReason: "",
       amountMinor: 59900,
       currency: "INR",
       attemptCount: 1,
@@ -333,6 +336,7 @@ describe("diagnoseAmbiguous fail-safe behavior (§4.7)", () => {
 
     const ctx: DiagnosisContext = {
       failureCode: "ambiguous",
+      failureReason: "",
       amountMinor: 59900,
       currency: "INR",
       attemptCount: 1,
@@ -351,6 +355,7 @@ describe("diagnoseAmbiguous fail-safe behavior (§4.7)", () => {
 
     const ctx: DiagnosisContext = {
       failureCode: "ambiguous",
+      failureReason: "",
       amountMinor: 59900,
       currency: "INR",
       attemptCount: 1,
@@ -379,6 +384,7 @@ describe("diagnoseAmbiguous fail-safe behavior (§4.7)", () => {
 
     const ctx: DiagnosisContext = {
       failureCode: "ambiguous",
+      failureReason: "",
       amountMinor: 59900,
       currency: "INR",
       attemptCount: 1,

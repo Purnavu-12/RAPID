@@ -170,7 +170,7 @@ export function normalizeFailureCode(errorCode: string, errorReason: string): st
 export function diagnose(failureCode: string): {
   rootCause: string;
   confidence: number;
-  method: "rule";
+  method: "rule" | "llm";
   evidenceCodes: string[];
   reasonSummary: string;
 } {

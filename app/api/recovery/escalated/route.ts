@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { resolveMerchantId } from "@/lib/webhooks/razorpay";
-import { appendAudit } from "@/lib/audit/ledger";
-import type { SupabaseClient } from "@/lib/supabase/server";
-
-type Supabase = SupabaseClient;
 
 /**
  * GET /api/recovery/escalated

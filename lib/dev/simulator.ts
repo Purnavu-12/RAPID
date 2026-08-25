@@ -579,11 +579,16 @@ export async function runProof(
   if (!ocErr && outcomes) {
     for (const o of outcomes as Array<{
       recovered_at: string;
-      risk_events: { detected_at: string };
+      risk_events: Array<{ detected_at: string }> | { detected_at: string };
     }>) {
+      const re = Array.isArray(o.risk_events)
+        ? o.risk_events[0]
+        : o.risk_events;
+      const detectedAt = re?.detected_at;
+      if (!detectedAt) continue;
       const ttr =
         (new Date(o.recovered_at).getTime() -
-          new Date(o.risk_events.detected_at).getTime()) /
+          new Date(detectedAt).getTime()) /
         1000;
       if (ttr >= 0) ttrs.push(ttr);
     }

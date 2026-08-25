@@ -14,7 +14,8 @@
  */
 
 import { createHash } from "node:crypto";
-import type { SupabaseClient } from "@/lib/supabase/server";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 /** Canonical serialization for hashing — sorted keys, no whitespace. */
 function canonicalize(data: unknown): string {
@@ -61,7 +62,7 @@ export type AuditEventType =
 
 export interface AuditEventInput {
   merchantId: string;
-  traceId?: string;
+  traceId?: string | null;
   entityType: EntityType;
   entityId: string;
   eventType: AuditEventType;
@@ -93,7 +94,7 @@ export function clearAuditCache() {
  * inserts with prev_hash for tamper evidence (§27).
  */
 export async function appendAudit(
-  supabase: SupabaseClient,
+  supabase: ReturnType<typeof createServerSupabaseClient>,
   event: AuditEventInput
 ): Promise<AuditEvent> {
   const occurredAt = event.occurredAt ?? new Date().toISOString();
@@ -178,7 +179,7 @@ export async function appendAudit(
 /** Fetch the full audit chain for a given entity (e.g. a recovery case).
  *  Ordered by occurred_at ascending. */
 export async function fetchAuditChain(
-  supabase: SupabaseClient,
+  supabase: ReturnType<typeof createServerSupabaseClient>,
   merchantId: string,
   entityId: string
 ): Promise<AuditEvent[]> {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { resolveMerchantId } from "@/lib/webhooks/razorpay";
 import { executeDueActions } from "@/lib/actions/executor";
+import { reconcileAndCount } from "@/lib/actions/reconcile";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -45,8 +46,38 @@ export async function POST(request: Request) {
   }
 
   try {
+    // §5.3: Reconcile UNKNOWN actions BEFORE executing due actions.
+    // Resolves UNKNOWN → COMPLETED (provider found the link) or resets
+    // to SCHEDULED (no match, safe retry). This prevents blind-retry double-
+    // minting of payment links (§4.1).
+    const reconcileResult = await reconcileAndCount(supabase, merchantId);
+
     const executed = await executeDueActions(supabase, merchantId, { dueNow });
-    return NextResponse.json({ executed, count: executed.length });
+
+    // Emit audit events for actions that were executed.
+    const { appendAudit } = await import("@/lib/audit/ledger");
+    for (const a of executed) {
+      await appendAudit(supabase, {
+        merchantId,
+        entityType: "action",
+        entityId: a.action_id,
+        eventType: "ACTION_EXECUTED",
+        actorType: "action_executor",
+        actorId: "execution-worker",
+        data: {
+          action_class: a.action_class,
+          risk_event_id: a.risk_event_id,
+          payment_link_id: a.payment_link_id,
+          short_url: a.short_url,
+        },
+      });
+    }
+
+    return NextResponse.json({
+      executed,
+      count: executed.length,
+      reconcile: reconcileResult,
+    });
   } catch (e) {
     return NextResponse.json(
       {

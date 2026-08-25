@@ -47,7 +47,7 @@ export async function executeDueActions(
   let query = supabase
     .from("actions")
     .select(
-      "action_id, action_class, risk_event_id, decision_id, idempotency_key, scheduled_for"
+      "action_id, action_class, risk_event_id, decision_id, idempotency_key, scheduled_for, result"
     )
     .eq("merchant_id", merchantId)
     .eq("status", "SCHEDULED")
@@ -140,18 +140,58 @@ export async function executeDueActions(
         short_url: link.short_url,
       });
     } catch (e) {
-      // Keep the action SCHEDULED so the next run can retry; record the cause.
-      await supabase
-        .from("actions")
-        .update({
-          result: {
-            provider: "razorpay",
-            error: e instanceof Error ? e.message : String(e),
-            failed_at: new Date().toISOString(),
-          },
-        })
-        .eq("action_id", row.action_id)
-        .eq("status", "SCHEDULED");
+      // §5: Classify the error. Transient failures (timeout, 5xx, network)
+      // → UNKNOWN (§5 reconciler will determine if the link was actually
+      // minted). Non-transient failures (4xx provider errors, idempotent
+      // duplicate) → keep SCHEDULED for a safe retry on the next cycle.
+      //
+      // §4.1: NEVER blindly retry an UNKNOWN — that risks double-minting a
+      // payment link. The reconciler resolves UNKNOWN by querying the provider.
+      const errMsg = e instanceof Error ? e.message : String(e);
+      const isTransient =
+        /timeout|timed out|5\d{2}|network|ECONNREFUSED|ETIMEDOUT|ENOTFOUND/i.test(
+          errMsg
+        );
+
+      if (isTransient) {
+        // Mark UNKNOWN — the reconciler (§5.3) will reconcile this.
+        const failedAt = new Date().toISOString();
+        const { error: updErr } = await supabase
+          .from("actions")
+          .update({
+            status: "UNKNOWN",
+            started_at: failedAt,
+            result: {
+              ...(row.result ?? {}),
+              error: errMsg,
+              error_type: "transient",
+              failed_at: failedAt,
+            },
+          })
+          .eq("action_id", row.action_id)
+          .eq("status", "SCHEDULED");
+
+        if (updErr) {
+          console.error(
+            `[executor] failed to mark UNKNOWN for ${row.action_id}:`,
+            updErr
+          );
+        }
+      } else {
+        // Non-transient error — keep SCHEDULED for safe retry next cycle.
+        await supabase
+          .from("actions")
+          .update({
+            result: {
+              provider: "razorpay",
+              error: errMsg,
+              error_type: "non_transient",
+              failed_at: new Date().toISOString(),
+            },
+          })
+          .eq("action_id", row.action_id)
+          .eq("status", "SCHEDULED");
+      }
       // One bad resource must not abort the batch.
     }
   }
