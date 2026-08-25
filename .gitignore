@@ -16,8 +16,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
+# env files — commit the example only; never commit local secrets
 .env*
+!.env.example
+
+# poolside
+/.poolside/
+
+# local supabase runtime state
+/supabase/.temp/
 
 # vercel
 .vercel
