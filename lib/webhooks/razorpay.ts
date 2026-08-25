@@ -31,6 +31,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { makeDecision } from "@/lib/policy/engine";
 import { diagnoseAmbiguous, DiagnosisContext, getAiMetadata } from "@/lib/ai/gateway";
+import { appendAudit, clearAuditCache } from "@/lib/audit/ledger";
 import {
   createHmac,
   createHash,
@@ -362,6 +363,29 @@ async function ingestFailure(
   if (reErr) throw reErr;
   const riskEventId = re!.risk_event_id;
 
+  // §27 audit: RISK_DETECTED — emit the first event in the case chain.
+  await appendAudit(supabase, {
+    merchantId: ev.merchantId,
+    traceId: ev.externalEventId,
+    entityType: "recovery_case",
+    entityId: riskEventId,
+    eventType: "RISK_DETECTED",
+    actorType: "webhook_receiver",
+    actorId: "razorpay",
+    occurredAt: ev.occurredAt,
+    data: {
+      provider: ev.provider,
+      event_type: ev.eventType,
+      external_event_id: ev.externalEventId,
+      risk_type: ev.riskType,
+      amount_minor: ev.amountMinor,
+      currency: ev.currency,
+      source_ref: ev.sourceRef,
+      failure_code: ev.evidence["failure_code"],
+      attempt_count: ev.evidence["attempt_count"],
+    },
+  });
+
   // §11 — Hybrid diagnosis: rule-first (§11.1), then LLM for ambiguous (§11.2).
   const ruleDiag = diagnose(String(ev.evidence["failure_code"] || "ambiguous"));
   let diag = ruleDiag;
@@ -411,6 +435,26 @@ async function ingestFailure(
     .maybeSingle();
   if (dErr) throw dErr;
 
+  // §27 audit: DIAGNOSED — record the diagnosis (rule or LLM) in the chain.
+  await appendAudit(supabase, {
+    merchantId: ev.merchantId,
+    traceId: ev.externalEventId,
+    entityType: "recovery_case",
+    entityId: riskEventId,
+    eventType: "DIAGNOSED",
+    actorType: "diagnosis_engine",
+    actorId: diag.method === "llm" ? "llm-diagnoser" : "rule-engine",
+    occurredAt: ev.occurredAt,
+    data: {
+      root_cause: diag.rootCause,
+      confidence: diag.confidence,
+      method: diag.method,
+      evidence_codes: diag.evidenceCodes,
+      model_version: diag.method === "llm" ? aiMetadata.model_version : undefined,
+      prompt_version: diag.method === "llm" ? aiMetadata.prompt_version : undefined,
+    },
+  });
+
   // §14 decision + §13 action — now policy-driven (§4.3/§16): loads the
   // merchant's active policy_versions row (fallback v1.4) then evaluates it.
   const decision = await makeDecision(supabase, ev.merchantId, {
@@ -458,6 +502,58 @@ async function ingestFailure(
     .select("action_id")
     .maybeSingle();
   if (actErr) throw actErr;
+
+  // §27 audit: DECIDED + ACTION_SCHEDULED — record the policy decision and
+  // the scheduled action in the chain.
+  if (decision.requiresHuman) {
+    await appendAudit(supabase, {
+      merchantId: ev.merchantId,
+      traceId: ev.externalEventId,
+      entityType: "recovery_case",
+      entityId: riskEventId,
+      eventType: "ESCALATED",
+      actorType: "policy_engine",
+      actorId: decision.policyLabel,
+      occurredAt: ev.occurredAt,
+      data: {
+        action_class: decision.actionClass,
+        reason_codes: decision.reasonCodes,
+        probability_of_success: decision.probability,
+      },
+    });
+  }
+  await appendAudit(supabase, {
+    merchantId: ev.merchantId,
+    traceId: ev.externalEventId,
+    entityType: "recovery_case",
+    entityId: riskEventId,
+    eventType: "DECIDED",
+    actorType: "policy_engine",
+    actorId: decision.policyLabel,
+    occurredAt: ev.occurredAt,
+    data: {
+      action_class: decision.actionClass,
+      reason_codes: decision.reasonCodes,
+      probability_of_success: decision.probability,
+      policy_version: decision.policyLabel,
+      requires_human: decision.requiresHuman,
+    },
+  });
+  await appendAudit(supabase, {
+    merchantId: ev.merchantId,
+    traceId: ev.externalEventId,
+    entityType: "action",
+    entityId: act!.action_id,
+    eventType: "ACTION_SCHEDULED",
+    actorType: "action_executor",
+    actorId: "execution-worker",
+    occurredAt: ev.occurredAt,
+    data: {
+      action_class: decision.actionClass,
+      scheduled_for: scheduledFor,
+      idempotency_key: buildIdempotencyKey(riskEventId, decision.actionClass, 1),
+    },
+  });
 
   return {
     deduped: false,
@@ -521,6 +617,24 @@ async function ingestRecovery(supabase: SupabaseClient, ev: NormalizedEvent) {
     },
   });
   if (ocErr) throw ocErr;
+
+  // §27 audit: OUTCOME_RECORDED — record the confirmed recovery in the chain.
+  await appendAudit(supabase, {
+    merchantId: ev.merchantId,
+    traceId: ev.externalEventId,
+    entityType: "recovery_case",
+    entityId: re.risk_event_id,
+    eventType: "OUTCOME_RECORDED",
+    actorType: "outcome_verifier",
+    actorId: "razorpay",
+    occurredAt: ev.occurredAt,
+    data: {
+      status: "RECOVERED",
+      recovered_amount_minor: recoveredAmount,
+      provider_event: ev.eventType,
+      external_event_id: ev.externalEventId,
+    },
+  });
 
   return { outcome: "RECOVERED", caseId: re.risk_event_id, recoveredAmount };
 }

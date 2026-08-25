@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowRight, Clock, PlayCircle, AlertCircle } from "lucide-react";
+import { ArrowRight, Clock, PlayCircle, AlertCircle, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { CaseChainViewer } from "@/components/dashboard/case-chain-viewer";
 import type { RecoveryCase } from "@/lib/dashboard";
 
 const statusMeta: Record<string, { label: string; color: string }> = {
@@ -107,7 +108,7 @@ export function CasesTable({ cases }: { cases: RecoveryCase[] | null }) {
           </div>
         ) : (
           <table className="w-full text-left text-sm">
-            <thead className="bg-foreground/[0.02]">
+            <thead className="bg-foreground/2">
               <tr>
                 <th className="px-6 py-3 text-xs font-mono text-muted-foreground uppercase tracking-widest">
                   Case
@@ -129,6 +130,9 @@ export function CasesTable({ cases }: { cases: RecoveryCase[] | null }) {
                 </th>
                 <th className="px-6 py-3 text-xs font-mono text-muted-foreground uppercase tracking-widest text-right">
                   Recovered
+                </th>
+                <th className="px-6 py-3 text-xs font-mono text-muted-foreground uppercase tracking-widest">
+                  Audit
                 </th>
               </tr>
             </thead>
@@ -188,6 +192,18 @@ export function CasesTable({ cases }: { cases: RecoveryCase[] | null }) {
                       {c.recovered > 0
                         ? formatAmount(c.recovered, c.currency)
                         : "—"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <CaseChainViewer caseId={c.id}>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                          title="View audit trail"
+                        >
+                          <Link2 className="w-3 h-3" />
+                          Chain
+                        </button>
+                      </CaseChainViewer>
                     </td>
                   </tr>
                 );
