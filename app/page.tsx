@@ -1,7 +1,9 @@
 import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
+import { AnimatedPipeline } from "@/components/landing/animated-pipeline";
 import { LiveRecoveryWidget } from "@/components/landing/live-recovery-widget";
 import { FeaturesSection } from "@/components/landing/features-section";
+import { MetricsSection } from "@/components/landing/metrics-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { FooterSection } from "@/components/landing/footer-section";
 
@@ -19,8 +21,10 @@ export default function Home() {
     <main className="relative min-h-screen overflow-x-hidden noise-overlay">
       <Navigation />
       <HeroSection />
+      <AnimatedPipeline />
       <LiveRecoveryWidget />
       <FeaturesSection />
+      <MetricsSection />
       <CtaSection />
       <FooterSection />
     </main>
