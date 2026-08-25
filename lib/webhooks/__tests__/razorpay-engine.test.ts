@@ -2,21 +2,24 @@
 /**
  * Wave 1.1 (§47) unit tests for the rule-first recovery engine.
  *
- * These are the deterministic, I/O-free pieces of lib/webhooks/razorpay.ts:
- * the failure-code normalization, §11 rule-based diagnosis, §14 decision
- * (incl. the §16/§17 amount threshold boundary), §48 signature verification,
- * and §4.2/§28 idempotency-key generation. The §45 scenario table at the end
- * is the repeatable regression harness for "the engine handles every payment
- * failure type" — it runs with no DB and no secrets.
+ * These are the deterministic, I/O-free pieces of the recovery engine:
+ * lib/webhooks/razorpay.ts (§11 diagnosis, §48 signature, §4.2/§28 idempotency)
+ * and lib/policy/engine.ts (§14 decision now data-driven per §4.3/§16, with the
+ * §16/§17 amount threshold boundary at 500000 paise and the §45 scenario table).
  */
 import { createHmac } from "node:crypto";
 import {
   normalizeFailureCode,
   diagnose,
-  decide,
   verifyRazorpaySignature,
   buildIdempotencyKey,
 } from "@/lib/webhooks/razorpay";
+import {
+  evaluate,
+  DEFAULT_POLICY,
+  makeDecision,
+  RecoveryPolicy,
+} from "@/lib/policy/engine";
 
 describe("normalizeFailureCode (§11.1 rule-first normalization)", () => {
   it.each([
@@ -64,9 +67,11 @@ describe("diagnose (§11.1 rule-first diagnosis)", () => {
   });
 });
 
-describe("decide (§14 Decision Engine + §16 policy table)", () => {
+describe("evaluate (§14 Decision Engine + §16 policy table, now data-driven)", () => {
+  // Wave 1.2 makes the policy a value: `evaluate(policy, ctx)` is pure, and
+  // `DEFAULT_POLICY` reproduces the prior v1.4 hardcoded values exactly.
   it("low-value Insufficient Funds → CREATE_PAYMENT_LINK (P=.84)", () => {
-    const d = decide("Insufficient Funds", 59900);
+    const d = evaluate(DEFAULT_POLICY, { rootCause: "Insufficient Funds", amountMinor: 59900 });
     expect(d.actionClass).toBe("CREATE_PAYMENT_LINK");
     expect(d.requiresHuman).toBe(false);
     expect(d.probability).toBe(0.84);
@@ -75,18 +80,20 @@ describe("decide (§14 Decision Engine + §16 policy table)", () => {
   });
 
   it("Gateway Failure → RETRY_LATER (P=.65)", () => {
-    const d = decide("Gateway Failure", 199900);
+    const d = evaluate(DEFAULT_POLICY, { rootCause: "Gateway Failure", amountMinor: 199900 });
     expect(d.actionClass).toBe("RETRY_LATER");
     expect(d.requiresHuman).toBe(false);
     expect(d.probability).toBe(0.65);
   });
 
   it("Authentication → RETRY_LATER (P=.65)", () => {
-    expect(decide("Authentication", 9900).actionClass).toBe("RETRY_LATER");
+    expect(evaluate(DEFAULT_POLICY, { rootCause: "Authentication", amountMinor: 9900 }).actionClass).toBe(
+      "RETRY_LATER"
+    );
   });
 
   it("ambiguous → ESCALATE_HUMAN (P=.48)", () => {
-    const d = decide("Ambiguous", 49900);
+    const d = evaluate(DEFAULT_POLICY, { rootCause: "Ambiguous", amountMinor: 49900 });
     expect(d.actionClass).toBe("ESCALATE_HUMAN");
     expect(d.requiresHuman).toBe(true);
     expect(d.probability).toBe(0.48);
@@ -95,23 +102,98 @@ describe("decide (§14 Decision Engine + §16 policy table)", () => {
   // §16/§17 amount threshold: strictly greater than 500000 paise (₹5,000).
   describe("high-value threshold boundary (§16)", () => {
     it("amount == 500000 (₹5,000 exactly) is NOT escalated", () => {
-      expect(decide("Insufficient Funds", 500_000).actionClass).toBe(
-        "CREATE_PAYMENT_LINK"
-      );
+      expect(
+        evaluate(DEFAULT_POLICY, { rootCause: "Insufficient Funds", amountMinor: 500_000 }).actionClass
+      ).toBe("CREATE_PAYMENT_LINK");
     });
     it("amount == 500001 (₹5,000.01) IS escalated", () => {
-      const d = decide("Insufficient Funds", 500_001);
+      const d = evaluate(DEFAULT_POLICY, { rootCause: "Insufficient Funds", amountMinor: 500_001 });
       expect(d.actionClass).toBe("ESCALATE_HUMAN");
       expect(d.requiresHuman).toBe(true);
       expect(d.probability).toBe(0.55);
       expect(d.expectedRecoveryMinor).toBe(500_001);
     });
     it("high-value duplicate/exhausted-cause → ESCALATE_HUMAN", () => {
-      expect(decide("Duplicate Transaction", 750_000).requiresHuman).toBe(true);
+      expect(
+        evaluate(DEFAULT_POLICY, { rootCause: "Duplicate Transaction", amountMinor: 750_000 }).requiresHuman
+      ).toBe(true);
     });
     it("low-value ambiguous → ESCALATE_HUMAN (ambiguous beats amount)", () => {
-      expect(decide("Ambiguous", 100).actionClass).toBe("ESCALATE_HUMAN");
+      expect(
+        evaluate(DEFAULT_POLICY, { rootCause: "Ambiguous", amountMinor: 100 }).actionClass
+      ).toBe("ESCALATE_HUMAN");
     });
+  });
+});
+
+describe("policy-as-data (§4.3 loadActivePolicy + §4.7 graceful degradation)", () => {
+  // Mock a Supabase client whose only contract is the policy_versions query
+  // chain used by loadActivePolicy: from().select().eq().eq().order().limit().maybeSingle()
+  const mockSupabase = (row: unknown) => {
+    const terminal = async () => ({ data: row, error: row ? null : null });
+    const builder = {
+      eq: () => builder,
+      order: () => builder,
+      limit: () => builder,
+      maybeSingle: terminal,
+    };
+    return { from: () => ({ select: () => builder }) } as any;
+  };
+
+  it("falls back to DEFAULT_POLICY (v1.4) when no active row exists (§4.7)", async () => {
+    // No active policy in the DB → makeDecision must still produce the
+    // v1.4 behaviour exactly (behavior-preserving migration to data).
+    const d = await makeDecision(
+      mockSupabase(null),
+      "merchant-1",
+      { rootCause: "Insufficient Funds", amountMinor: 59900 }
+    );
+    expect(d.actionClass).toBe("CREATE_PAYMENT_LINK");
+    expect(d.probability).toBe(0.84);
+    expect(d.policyLabel).toBe("v1.4"); // fallback label surfaced downstream
+  });
+
+  it("rejects structurally invalid policy rows and falls back (§4.7)", async () => {
+    const d = await makeDecision(
+      mockSupabase({ version: 2, rules: { not_a_policy: true } }),
+      "merchant-1",
+      { rootCause: "Insufficient Funds", amountMinor: 59900 }
+    );
+    expect(d.actionClass).toBe("CREATE_PAYMENT_LINK");
+    expect(d.policyLabel).toBe("v1.4");
+  });
+
+  it("reads active policy FROM the table — changing the threshold in data changes the decision (§4.3)", async () => {
+    // Seed a policy with a LOWER high-value threshold (₹4,000) and a custom label.
+    // A ₹4,500 Insufficient Funds case now escalates instead of auto-linking —
+    // proving the decision is driven by the DB row, not hardcoded constants.
+    const custom: RecoveryPolicy = {
+      label: "custom-v2",
+      version: 2,
+      high_value_threshold_minor: 400_000,
+      max_attempts: 5,
+      failure_window_seconds: 3_600,
+      retryable_root_causes: ["Gateway Failure", "Authentication"],
+      probabilities: {
+        create_payment_link: 0.84,
+        retry_later: 0.65,
+        escalate_human_high_value: 0.55,
+        escalate_human_ambiguous: 0.48,
+      },
+    };
+    const d = await makeDecision(
+      mockSupabase({ version: 2, status: "active", rules: custom }),
+      "merchant-1",
+      { rootCause: "Insufficient Funds", amountMinor: 450_000 }
+    );
+    expect(d.actionClass).toBe("ESCALATE_HUMAN");
+    expect(d.policyLabel).toBe("custom-v2");
+  });
+
+  it("DEFAULT_POLICY threshold boundary is exactly 500000 paise (§16)", () => {
+    expect(DEFAULT_POLICY.high_value_threshold_minor).toBe(500_000);
+    expect(DEFAULT_POLICY.probabilities.create_payment_link).toBe(0.84);
+    expect(DEFAULT_POLICY.probabilities.escalate_human_ambiguous).toBe(0.48);
   });
 });
 
@@ -180,7 +262,7 @@ describe("§45 scenario decision table (engine handles every failure type)", () 
     (s) => {
       const code = normalizeFailureCode(s.errorCode, s.errorReason);
       const diag = diagnose(code);
-      const d = decide(diag.rootCause, s.amount);
+      const d = evaluate(DEFAULT_POLICY, { rootCause: diag.rootCause, amountMinor: s.amount });
       expect(d.actionClass).toBe(s.expectedAction);
     }
   );
