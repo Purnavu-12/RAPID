@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { DashboardMetrics } from "@/components/dashboard/metrics-grid";
 import { RecoveryChart } from "@/components/dashboard/recovery-chart";
 import { CasesTable } from "@/components/dashboard/cases-table";
+import { SimulationLab } from "@/components/dashboard/simulation-lab";
 import { ArrowLeft, RefreshCw, Clock, PlayCircle, Zap } from "lucide-react";
 import Link from "next/link";
 import type { RecoveryPayload } from "@/lib/dashboard";
@@ -261,6 +262,14 @@ export function DashboardShell() {
         <section>
           <CasesTable cases={data ? data.cases : null} />
         </section>
+
+        {/* §45 + §43 Simulation Lab (dev-only). Surfaces the engine handling
+            every failure type + a with-vs-without recovery lift measurement. */}
+        {isDev && (
+          <section>
+            <SimulationLab />
+          </section>
+        )}
       </main>
     </div>
   );
