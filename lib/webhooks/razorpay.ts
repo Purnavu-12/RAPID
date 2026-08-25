@@ -144,7 +144,7 @@ function razorpayEntity(payload: unknown): PaymentEntity {
 }
 
 /** Map a Razorpay decline into a normalized failure code (§11.1 rule-first). */
-function normalizeFailureCode(errorCode: string, errorReason: string): string {
+export function normalizeFailureCode(errorCode: string, errorReason: string): string {
   const haystack = `${errorCode} ${errorReason}`.toLowerCase();
   if (!haystack || haystack === " ") return "ambiguous";
   if (haystack.includes("insufficient") || haystack.includes("balance"))
@@ -164,7 +164,7 @@ function normalizeFailureCode(errorCode: string, errorReason: string): string {
  * Rule-first diagnosis (§11.1): known provider reason codes map without an LLM
  * call, reducing latency, cost, and uncertainty.
  */
-function diagnose(failureCode: string): {
+export function diagnose(failureCode: string): {
   rootCause: string;
   confidence: number;
   method: "rule";
@@ -203,7 +203,7 @@ const HIGH_VALUE_THRESHOLD_MINOR = 500_000; // ₹5,000 — above this, escalate
  * No ML model required to start: the recoverability estimate is a stable
  * heuristic keyed off root cause and amount, comparable across experiments.
  */
-function decide(rootCause: string, amountMinor: number): {
+export function decide(rootCause: string, amountMinor: number): {
   actionClass: string;
   requiresHuman: boolean;
   probability: number;
@@ -236,6 +236,16 @@ function decide(rootCause: string, amountMinor: number): {
     reasonCodes: ["WITHIN_AUTO_LIMIT", "RECOVERY_WINDOW_OPEN", "POLICY_OK"],
     expectedRecoveryMinor: actionClass === "CREATE_PAYMENT_LINK" ? amountMinor : null,
   };
+}
+
+/** §4.2 / §28 idempotency key for a recovery action attempt. Stable + derivable
+ *  from the case so duplicate deliveries/retries never double-mint a link. */
+export function buildIdempotencyKey(
+  riskEventId: string,
+  actionClass: string,
+  attemptNo = 1
+): string {
+  return `case:${riskEventId}:${actionClass}:${attemptNo}`;
 }
 
 export interface WebhookResult {
@@ -432,7 +442,7 @@ async function ingestFailure(
       merchant_id: ev.merchantId,
       action_class: decision.actionClass,
       status: "SCHEDULED", // §13 action lifecycle
-      idempotency_key: `case:${riskEventId}:${decision.actionClass}:1`, // §4.2 / §28
+      idempotency_key: buildIdempotencyKey(riskEventId, decision.actionClass, 1), // §4.2 / §28
       scheduled_for: scheduledFor,
       provider_ref: `plink_${ev.sourceRef}`,
       result: {
