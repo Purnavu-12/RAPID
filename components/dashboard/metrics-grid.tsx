@@ -112,7 +112,7 @@ export function DashboardMetrics({
                 <div className="h-7 w-3/4 max-w-24 bg-foreground/5 rounded animate-pulse" />
               ) : (
                 <AnimatedCounter
-                  end={value}
+                  end={Math.round(value ?? 0)}
                   suffix={m.suffix}
                   prefix={m.prefix}
                   formatter={m.formatter}

@@ -68,12 +68,14 @@ export async function GET() {
 
     const recoveredMinor = Number(metricsRow?.revenue_recovered_minor ?? 0);
     const atRiskMinor = Number(metricsRow?.revenue_at_risk_minor ?? 0);
-    // Express in thousands of major rupees so the grid reads ₹12K etc.
-    const recovered = Math.round(recoveredMinor / MINOR_TO_K);
-    const atRisk = Math.round(atRiskMinor / MINOR_TO_K);
+    // §37 Key Metrics: revenue expressed in thousands of major rupees (₹K).
+    // Kept raw so the recovery rate derives from the unrounded amounts
+    // (1190200 / 1749800 -> 68%, not 12 / 18 -> 67%). The grid rounds for display.
+    const recovered = recoveredMinor / MINOR_TO_K;
+    const atRisk = atRiskMinor / MINOR_TO_K;
     const recoveryRate =
-      recovered + atRisk > 0
-        ? Math.round((recovered / (recovered + atRisk)) * 100)
+      recoveredMinor + atRiskMinor > 0
+        ? Math.round((recoveredMinor / (recoveredMinor + atRiskMinor)) * 100)
         : 0;
     const latency = Math.round(
       Number(metricsRow?.median_time_to_recovery_sec ?? 0)
