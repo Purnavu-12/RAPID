@@ -24,6 +24,9 @@ yarn-error.log*
 # poolside
 /.poolside/
 
+# opencode local state (plans, cache)
+/.opencode/
+
 # local supabase runtime state
 /supabase/.temp/
 
