@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Clock } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowRight, Clock, PlayCircle, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { RecoveryCase } from "@/lib/dashboard";
 
@@ -25,6 +26,25 @@ const statusMeta: Record<string, { label: string; color: string }> = {
   OUTCOME_PENDING: {
     label: "Pending",
     color: "bg-violet-500/10 text-violet-500 border-violet-500/20",
+  },
+};
+
+/** §13 engine actions surfaced on each audit row (RecoveryCase.actionClass). */
+const actionMeta: Record<string, { label: string; color: string; icon: ReactNode }> = {
+  CREATE_PAYMENT_LINK: {
+    label: "Payment link",
+    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    icon: <PlayCircle className="w-3 h-3" />,
+  },
+  RETRY_LATER: {
+    label: "Retry later",
+    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    icon: <Clock className="w-3 h-3" />,
+  },
+  ESCALATE_HUMAN: {
+    label: "Escalate",
+    color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    icon: <AlertCircle className="w-3 h-3" />,
   },
 };
 
@@ -102,6 +122,9 @@ export function CasesTable({ cases }: { cases: RecoveryCase[] | null }) {
                   Amount
                 </th>
                 <th className="px-6 py-3 text-xs font-mono text-muted-foreground uppercase tracking-widest">
+                  Action
+                </th>
+                <th className="px-6 py-3 text-xs font-mono text-muted-foreground uppercase tracking-widest">
                   Status
                 </th>
                 <th className="px-6 py-3 text-xs font-mono text-muted-foreground uppercase tracking-widest text-right">
@@ -131,6 +154,30 @@ export function CasesTable({ cases }: { cases: RecoveryCase[] | null }) {
                     </td>
                     <td className="px-6 py-4">
                       {formatAmount(c.amount, c.currency)}
+                    </td>
+                    <td className="px-6 py-4">
+                      {c.actionClass ? (
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            className={
+                              (actionMeta[c.actionClass]?.color ??
+                                "bg-slate-500/10 text-slate-400 border-slate-500/20") +
+                              " gap-1 pl-1.5"
+                            }
+                            variant="outline"
+                          >
+                            {actionMeta[c.actionClass]?.icon}
+                            {actionMeta[c.actionClass]?.label ?? c.actionClass}
+                          </Badge>
+                          {c.confidence != null && (
+                            <span className="text-xs font-mono text-muted-foreground">
+                              {Math.round(c.confidence * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <Badge className={meta.color} variant="outline">

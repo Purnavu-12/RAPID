@@ -36,6 +36,12 @@ interface RecoveryCaseRow {
   status: string | null;
   recovered_amount_minor: number | string | null;
   updated_at: string | null;
+  /** §14 decision surfaced by the projection (dec.action_class as proposed_action). */
+  proposed_action: string | null;
+  /** §11 diagnosis confidence (diag.confidence). */
+  confidence: number | string | null;
+  /** §14 P(success) for the chosen action (dec.probability_of_success as recoverability). */
+  recoverability: number | string | null;
 }
 
 /** Resolve the demo merchant. Honours an explicit RAPID_MERCHANT_ID env var
@@ -131,6 +137,9 @@ export async function GET() {
       status: (c.status ?? "OUTCOME_PENDING") as RecoveryCase["status"],
       recovered: Number(c.recovered_amount_minor ?? 0),
       createdAt: c.updated_at ?? "",
+      actionClass: c.proposed_action ?? null,
+      confidence: c.confidence != null ? Number(c.confidence) : null,
+      probability: c.recoverability != null ? Number(c.recoverability) : null,
     }));
 
     const payload: RecoveryPayload = {

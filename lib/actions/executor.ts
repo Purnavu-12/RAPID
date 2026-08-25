@@ -23,6 +23,13 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type SupabaseClient = ReturnType<typeof createServerSupabaseClient>;
 
+/** Gentle pacing between provider resource creations (§5 Execution Plane).
+ *  The live Razorpay test account rate-limits payment-link creation, so we
+ *  never mint a burst of links in a tight loop — keeps both cron execution
+ *  and the §43 lab under the limit. */
+const PRODUCER_DELAY_MS = 400;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export interface ExecutedAction {
   action_id: string;
   risk_event_id: string;
@@ -34,7 +41,7 @@ export interface ExecutedAction {
 export async function executeDueActions(
   supabase: SupabaseClient,
   merchantId: string,
-  opts: { dueNow?: boolean } = {}
+  opts: { dueNow?: boolean; restrictTo?: string[] } = {}
 ): Promise<ExecutedAction[]> {
   const now = new Date().toISOString();
   let query = supabase
@@ -48,6 +55,11 @@ export async function executeDueActions(
     .order("scheduled_for", { ascending: true });
   if (!opts.dueNow) {
     query = query.lte("scheduled_for", now);
+  }
+  // Optional cohort scoping (§43 with-vs-without lab): execute only these risk
+  // events instead of every due action.
+  if (opts.restrictTo && opts.restrictTo.length > 0) {
+    query = query.in("risk_event_id", opts.restrictTo);
   }
 
   const { data: rows, error } = await query;
@@ -86,6 +98,7 @@ export async function executeDueActions(
 
     try {
       // Real resource — surfaced verbatim on the audit trail (§23 reconciliation).
+      await delay(PRODUCER_DELAY_MS);
       const link = await createPaymentLink({
         amount,
         currency,
