@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { DashboardMetrics } from "@/components/dashboard/metrics-grid";
 import { RecoveryChart } from "@/components/dashboard/recovery-chart";
 import { CasesTable } from "@/components/dashboard/cases-table";
-import { ArrowLeft, RefreshCw, Clock } from "lucide-react";
+import { ArrowLeft, RefreshCw, Clock, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import type { RecoveryPayload } from "@/lib/dashboard";
 
@@ -12,11 +12,32 @@ export function DashboardShell() {
   const [data, setData] = useState<RecoveryPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [simulateStatus, setSimulateStatus] = useState<string | null>(null);
+  const [simulateLoading, setSimulateLoading] = useState(false);
+
+  // The simulation harness is bound to the Acme Retail demo tenant and is only
+  // exposed in development (docs/RAPID.md §47 integration test surface).
+  const isDev = process.env.NODE_ENV !== "production";
+
+  // A recovery case is "in flight" when its §24 state machine sits in an
+  // open, non-terminal state.
+  const openCaseExists = !!(data &&
+    data.cases.some(
+      (c) =>
+        c.status === "SCHEDULED" ||
+        c.status === "OUTCOME_PENDING" ||
+        c.status === "ESCALATED"
+    ));
+
+  const simulateStage: "failed" | "recovered" = openCaseExists
+    ? "recovered"
+    : "failed";
+  const simulateLabel = openCaseExists ? "Resolve last case" : "Simulate failed payment";
 
   // Promise-chain form (not async/await) so the effect's state updates live
   // in deferred callbacks — this satisfies the react-hooks/set-state-in-effect
   // lint rule while staying idiomatic.
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     fetch(`/api/recovery?t=${Date.now()}`, { cache: "no-store" })
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -32,11 +53,47 @@ export function DashboardShell() {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
+
+  // Gentle polling so live ledger writes (Phase 6 webhook ingestion) surface
+  // without a manual click — progress should be observable, not latent.
+  useEffect(() => {
+    const id = setInterval(fetchData, 10_000);
+    return () => clearInterval(id);
+  }, [fetchData]);
+
+  const simulate = () => {
+    setSimulateLoading(true);
+    fetch("/api/dev/simulate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ stage: simulateStage }),
+    })
+      .then(async (res) => {
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+        return json;
+      })
+      .then((json) => {
+        const short = json?.caseId?.slice(0, 8);
+        setSimulateStatus(
+          simulateStage === "failed"
+            ? `Simulated failed payment — new at-risk case ${short ? `…${short}` : ""}.`
+            : `Simulated recovery — case ${short ? `…${short}` : ""} marked RECOVERED.`
+        );
+        fetchData();
+      })
+      .catch((e: unknown) => {
+        setSimulateStatus(
+          `Simulation unavailable: ${e instanceof Error ? e.message : String(e)}`
+        );
+      })
+      .finally(() => setSimulateLoading(false));
+  };
 
   const refreshLabel = loading ? "Refreshing…" : "Refresh";
 
@@ -100,7 +157,32 @@ export function DashboardShell() {
             />
             {refreshLabel}
           </button>
+          {isDev && (
+            <button
+              type="button"
+              onClick={simulate}
+              disabled={simulateLoading}
+              className="inline-flex items-center gap-2 text-sm font-mono text-foreground bg-foreground/[0.06] border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/[0.10] px-4 h-10 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {simulateLoading ? (
+                <PlayCircle className="w-3.5 h-3.5 animate-pulse" />
+              ) : (
+                <PlayCircle className="w-3.5 h-3.5" />
+              )}
+              {simulateLoading ? "Running…" : simulateLabel}
+            </button>
+          )}
         </div>
+
+        {simulateStatus && (
+          <p
+            role="status"
+            aria-live="polite"
+            className="mt-3 text-xs font-mono text-muted-foreground"
+          >
+            {simulateStatus}
+          </p>
+        )}
 
         {error && (
           <div className="mb-8 p-4 border border-red-500/20 text-red-500 rounded-lg text-sm font-mono">
