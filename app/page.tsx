@@ -4,6 +4,7 @@ import { AnimatedPipeline } from "@/components/landing/animated-pipeline";
 import { LiveRecoveryWidget } from "@/components/landing/live-recovery-widget";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { MetricsSection } from "@/components/landing/metrics-section";
+import { ImpactComparison } from "@/components/landing/impact-comparison";
 import { CtaSection } from "@/components/landing/cta-section";
 import { FooterSection } from "@/components/landing/footer-section";
 
@@ -25,6 +26,26 @@ export default function Home() {
       <LiveRecoveryWidget />
       <FeaturesSection />
       <MetricsSection />
+      <ImpactComparison
+        baseline={{
+          recoveryRate: 0,
+          revenueRecovered: 0,
+          avgTimeToRecovery: 86400,
+          escalationRate: 100,
+          duplicateActions: 4,
+          policyViolations: 3,
+          casesHandled: 0,
+        }}
+        rapid={{
+          recoveryRate: 34,
+          revenueRecovered: 842000,
+          avgTimeToRecovery: 7,
+          escalationRate: 12,
+          duplicateActions: 0,
+          policyViolations: 0,
+          casesHandled: 156,
+        }}
+      />
       <CtaSection />
       <FooterSection />
     </main>

@@ -10,7 +10,7 @@ import { useTheme } from "next-themes";
 const navLinks = [
   { name: "Platform", href: "/platform" },
   { name: "How it works", href: "/how-it-works" },
-  { name: "Architecture", href: "/how-it-works" },
+  { name: "Impact", href: "/#impact" },
   { name: "Pricing", href: "/pricing" },
   { name: "Live demo", href: "/dashboard" },
 ];
