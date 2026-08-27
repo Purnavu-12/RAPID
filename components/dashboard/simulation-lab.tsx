@@ -185,8 +185,8 @@ function ScenarioView({ data }: { data: { created: ScenarioResult[] } }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-foreground/5">
-            {rows.map((r) => (
-              <tr key={r.caseId || r.orderId || r.scenario} className="align-top">
+            {rows.map((r, idx) => (
+              <tr key={`${r.scenario}-${r.orderId || r.caseId || idx}`} className="align-top">
                 <td className="px-4 py-3 font-mono text-xs text-foreground">
                   {r.scenario}
                   {r.error && (
@@ -284,7 +284,7 @@ function WithVsWithoutView({ data }: { data: WithVsWithoutResult }) {
                   i < data.without.cases ? "without engine" : "with engine";
                 return (
                   <tr
-                    key={r.caseId || r.orderId || r.scenario}
+                    key={`${r.scenario}-${r.orderId || r.caseId || i}-${cohort}`}
                     className="align-top"
                   >
                     <td className="px-4 py-3 font-mono text-xs text-foreground">

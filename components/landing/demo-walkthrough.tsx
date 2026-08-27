@@ -263,7 +263,6 @@ export function DemoWalkthrough() {
   };
 
   const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(currentStep - 0);
     setCurrentStep(Math.max(0, currentStep - 1));
   };
 
@@ -347,7 +346,7 @@ export function DemoWalkthrough() {
             {step.description}
           </p>
 
-          <div className="bg-foreground/[0.02] border border-foreground/10 p-4 rounded-lg mb-6">
+          <div className="bg-foreground/2 border border-foreground/10 p-4 rounded-lg mb-6">
             <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-2">
               Audit stage
             </div>
