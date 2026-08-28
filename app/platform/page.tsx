@@ -3,7 +3,7 @@ import { MetricsSection } from "@/components/landing/metrics-section";
 import { IntegrationsSection } from "@/components/landing/integrations-section";
 import { SecuritySection } from "@/components/landing/security-section";
 import { DevelopersSection } from "@/components/landing/developers-section";
-import { FooterSection } from "@/components/landing/footer-section";
+import { PageLayout } from "@/components/layout/page-layout";
 
 /** Platform — the product surface, as its own multipage route (no longer buried
  * in a single-scroll landing). */
@@ -15,13 +15,12 @@ export const metadata = {
 
 export default function PlatformPage() {
   return (
-    <>
+    <PageLayout showWave={false}>
       <InfrastructureSection />
       <MetricsSection />
       <IntegrationsSection />
       <SecuritySection />
       <DevelopersSection />
-      <FooterSection />
-    </>
+    </PageLayout>
   );
 }

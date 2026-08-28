@@ -2,14 +2,14 @@
 
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { AnimatedWave } from "./animated-wave";
+import { AnimatedWave } from "@/components/landing/animated-wave";
 
 const footerLinks = {
   Product: [
-    { name: "Features", href: "/#platform" },
+    { name: "Platform", href: "/platform" },
     { name: "How it works", href: "/how-it-works" },
     { name: "Pricing", href: "/pricing" },
-    { name: "Integrations", href: "/#integrations" },
+    { name: "Dashboard", href: "/dashboard" },
   ],
   Developers: [
     { name: "Documentation", href: "/docs" },
@@ -26,7 +26,7 @@ const footerLinks = {
   Legal: [
     { name: "Privacy", href: "https://razorpay.com/privacy" },
     { name: "Terms", href: "https://razorpay.com/terms" },
-    { name: "Security", href: "/#security" },
+    { name: "Security", href: "/about#security" },
   ],
 };
 
@@ -36,13 +36,18 @@ const socialLinks = [
   { name: "LinkedIn", href: "https://linkedin.com/company/razorpay" },
 ];
 
-export function FooterSection() {
+interface SiteFooterProps {
+  showWave?: boolean;
+}
+
+export function SiteFooter({ showWave = true }: SiteFooterProps) {
   return (
     <footer className="relative border-t border-foreground/10">
-      {/* Animated wave background */}
-      <div className="absolute inset-0 h-64 opacity-20 pointer-events-none overflow-hidden">
-        <AnimatedWave />
-      </div>
+      {showWave && (
+        <div className="absolute inset-0 h-64 opacity-20 pointer-events-none overflow-hidden">
+          <AnimatedWave />
+        </div>
+      )}
 
       <div className="relative z-10 max-w-350 mx-auto px-6 lg:px-12">
         {/* Main Footer */}
@@ -89,9 +94,9 @@ export function FooterSection() {
                           href={link.href}
                           {...(isExternal
                             ? {
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                            }
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                              }
                             : {})}
                           className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2"
                         >

@@ -1,6 +1,5 @@
-import { Navigation } from "@/components/landing/navigation";
-import { FooterSection } from "@/components/landing/footer-section";
 import { DemoWalkthrough } from "@/components/landing/demo-walkthrough";
+import { PageLayout } from "@/components/layout/page-layout";
 
 /** Guided demo — a step-by-step walkthrough of the full recovery pipeline.
  *  Drives fail → diagnose → decide → execute → pay → recovered sequentially
@@ -13,10 +12,8 @@ export const metadata = {
 
 export default function DemoPage() {
   return (
-    <>
-      <Navigation />
+    <PageLayout showWave={true}>
       <DemoWalkthrough />
-      <FooterSection />
-    </>
+    </PageLayout>
   );
 }

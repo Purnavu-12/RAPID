@@ -120,10 +120,12 @@ export function AnimatedPipeline() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full"
-      style={{ display: "block" }}
-    />
+    <section className="w-full h-64 lg:h-80 border-y border-foreground/5">
+      <canvas
+        ref={canvasRef}
+        className="block w-full h-full"
+        style={{ display: "block" }}
+      />
+    </section>
   );
 }

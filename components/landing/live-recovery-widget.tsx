@@ -15,7 +15,7 @@ function toRupees(maybe: number | undefined): number {
  * Live recovery metrics widget — the bridge between the marketing site and the
  * live recovery system. Polls GET /api/recovery (the same §26 projections the
  * dashboard uses) and renders the real Acme Retail demo numbers, refreshing
- * every 10s. Clicking the button opens /dashboard (the full audit trail).
+ * every 10s. Clicking the button opens /demo (the guided walkthrough).
  *
  * Numbers update in place on every poll (plain render, not a once-only
  * animation) so the live state is genuinely observable — every feature should
@@ -116,8 +116,8 @@ export function LiveRecoveryWidget() {
               asChild
               className="bg-foreground hover:bg-foreground/90 text-background rounded-full group h-12 shrink-0"
             >
-              <Link href="/dashboard">
-                Open live dashboard
+              <Link href="/demo">
+                Open guided demo
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
@@ -127,15 +127,14 @@ export function LiveRecoveryWidget() {
         <p className="mt-5 text-xs text-muted-foreground font-mono">
           {error && !data
             ? "Live feed paused — open the dashboard for full detail."
-            : `Updated every 10s · ~${secondsAgo}s ago${
-                data?.generatedAt
-                  ? " · " +
-                    new Date(data.generatedAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : ""
-              }`}
+            : `Updated every 10s · ~${secondsAgo}s ago${data?.generatedAt
+              ? " · " +
+              new Date(data.generatedAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              : ""
+            }`}
         </p>
       </div>
     </section>

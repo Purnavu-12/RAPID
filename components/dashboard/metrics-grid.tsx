@@ -69,6 +69,14 @@ export function DashboardMetrics({
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  const metricLabels: Record<string, string> = {
+    recoveryRate: "Recovery",
+    recovered: "Recovered",
+    atRisk: "At Risk",
+    latency: "Latency",
+  };
+
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -91,9 +99,8 @@ export function DashboardMetrics({
         return (
           <div
             key={m.id}
-            className={`relative p-6 border border-foreground/10 transition-all duration-700 ${
-              visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
+            className={`relative p-6 border border-foreground/10 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              }`}
             style={{ transitionDelay: `${i * 80}ms` }}
           >
             <div className="flex items-start justify-between mb-4">
@@ -102,8 +109,8 @@ export function DashboardMetrics({
               >
                 <Icon className={`w-5 h-5 ${m.iconColor}`} />
               </div>
-              <span className="text-xs font-mono text-muted-foreground/60">
-                {m.id}
+              <span className="text-xs font-mono text-muted-foreground/60 uppercase tracking-wider">
+                {metricLabels[m.id] ?? m.id}
               </span>
             </div>
 

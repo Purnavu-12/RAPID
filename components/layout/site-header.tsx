@@ -6,16 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
-/** Real, shareable routes (multipage) instead of single-scroll anchors. */
+/** Site-wide navigation - used on all pages for consistency */
 const navLinks = [
   { name: "Platform", href: "/platform" },
   { name: "How it works", href: "/how-it-works" },
-  { name: "Impact", href: "/#impact" },
   { name: "Pricing", href: "/pricing" },
-  { name: "Live demo", href: "/demo" },
+  { name: "Demo", href: "/demo" },
+  { name: "Dashboard", href: "/dashboard" },
+  { name: "Docs", href: "/docs" },
+  { name: "About", href: "/about" },
 ];
 
-export function Navigation() {
+export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -64,7 +66,7 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-12">
+          <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -91,20 +93,13 @@ export function Navigation() {
                 <Moon className="w-4 h-4" />
               )}
             </button>
-            <Link
-              href="/docs"
-              className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"
-                }`}
-            >
-              Docs
-            </Link>
             <Button
               asChild
               size="sm"
               className={`bg-foreground hover:bg-foreground/90 text-background rounded-full transition-all duration-500 ${isScrolled ? "px-4 h-8 text-xs" : "px-6"
                 }`}
             >
-              <Link href="/demo">Live demo</Link>
+              <Link href="/demo">Try Demo</Link>
             </Button>
           </div>
 
@@ -138,7 +133,7 @@ export function Navigation() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`text-5xl font-display text-foreground hover:text-muted-foreground transition-all duration-500 ${isMobileMenuOpen
+                  className={`text-4xl font-display text-foreground hover:text-muted-foreground transition-all duration-500 ${isMobileMenuOpen
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
                     }`}
@@ -172,7 +167,7 @@ export function Navigation() {
                 asChild
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Link href="/demo">Live demo</Link>
+                <Link href="/demo">Try Demo</Link>
               </Button>
             </div>
           </div>

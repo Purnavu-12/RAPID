@@ -2,6 +2,7 @@ import "./docs.css";
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata = {
   title: "Documentation — RAPID",
@@ -12,23 +13,13 @@ export const metadata = {
 export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-foreground noise-overlay">
-      <header className="border-b border-foreground/10">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 h-14 flex items-center justify-between">
-          <Link href="/" className="font-display text-xl text-foreground">
-            RAPID
-            <span className="text-xs text-muted-foreground font-mono"> Docs</span>
-          </Link>
-          <span className="text-xs font-mono text-muted-foreground">
-            v2.0 architecture baseline
-          </span>
-        </div>
-      </header>
-
-      <main className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12 lg:py-16">
+      <SiteHeader />
+      
+      <main className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 pt-24 lg:pt-28 pb-16">
         {children}
       </main>
 
-      <footer className="border-t border-foreground/10 mt-16">
+      <footer className="relative z-10 border-t border-foreground/10 mt-16">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-6 text-sm font-mono text-muted-foreground">
           docs/RAPID.md · rendered at build time — no runtime doc server.
         </div>

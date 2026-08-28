@@ -53,7 +53,7 @@ function authHeader(): string {
     throw new Error(
       "Razorpay API credentials are not configured (set RZP_KEY_ID and " +
         "RZP_KEY_SECRET). The Phase 7 dev demo needs them to create real test " +
-        "resources in the Razorpay account."
+        "resources in the Razorpay account.",
     );
   }
   return "Basic " + Buffer.from(`${id}:${secret}`).toString("base64");
@@ -61,7 +61,7 @@ function authHeader(): string {
 
 export async function razorpay<R>(
   path: string,
-  opts: RequestInit = {}
+  opts: RequestInit = {},
 ): Promise<R> {
   const res = await fetch(`${RAZORPAY_BASE}${path}`, {
     ...opts,
@@ -73,8 +73,10 @@ export async function razorpay<R>(
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
+    const retryAfter = res.headers.get("retry-after");
+    const detail = retryAfter ? ` (retry-after: ${retryAfter}s)` : "";
     throw new Error(
-      `Razorpay API ${res.status} ${res.statusText}: ${body.slice(0, 300)}`
+      `Razorpay API ${res.status} ${res.statusText}: ${body.slice(0, 300)}${detail}`,
     );
   }
   return res.json() as Promise<R>;
@@ -89,7 +91,7 @@ export interface CreateOrderParams {
 
 /** Create a real Razorpay Order (test/live). §10.2 amount is in paise. */
 export async function createOrder(
-  params: CreateOrderParams
+  params: CreateOrderParams,
 ): Promise<RazorpayOrder> {
   const { amount, currency, receipt, notes } = params;
   const body: Record<string, unknown> = {
@@ -118,7 +120,7 @@ export interface CreatePaymentLinkParams {
 
 /** Create a real Razorpay Payment Link (test/live). */
 export async function createPaymentLink(
-  params: CreatePaymentLinkParams
+  params: CreatePaymentLinkParams,
 ): Promise<CreatePaymentLinkResult> {
   const { amount, currency, description, notes, callback_url } = params;
   const body: Record<string, unknown> = {
@@ -135,10 +137,10 @@ export async function createPaymentLink(
 }
 
 export async function fetchPaymentLink(
-  id: string
+  id: string,
 ): Promise<RazorpayPaymentLink> {
   return razorpay<RazorpayPaymentLink>(
-    `/payment_links/${encodeURIComponent(id)}`
+    `/payment_links/${encodeURIComponent(id)}`,
   );
 }
 

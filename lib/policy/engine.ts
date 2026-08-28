@@ -38,6 +38,10 @@ export interface RecoveryPolicy {
   max_attempts: number;
   failure_window_seconds: number;
   retryable_root_causes: string[];
+  /** Root causes that are terminal — recovery is futile regardless of
+   *  attempts (hard issuer declines, fraud, policy violation). Triggers
+   *  STOP_RECOVERY (§13 action catalog) instead of another intervention. */
+  terminal_root_causes: string[];
   probabilities: RecoveryProbabilities;
 }
 
@@ -77,6 +81,8 @@ export const DEFAULT_POLICY: RecoveryPolicy = {
   max_attempts: 3,
   failure_window_seconds: 7_200, // §4.4 retry/failure window
   retryable_root_causes: ["Gateway Failure", "Authentication"],
+  /** §17#8 hard stop: declines that can never recover. */
+  terminal_root_causes: ["Duplicate Transaction", "Fraud"],
   probabilities: {
     create_payment_link: 0.84,
     retry_later: 0.65,
@@ -91,7 +97,7 @@ export const DEFAULT_POLICY: RecoveryPolicy = {
  */
 export function evaluate(
   policy: RecoveryPolicy,
-  ctx: DecisionContext
+  ctx: DecisionContext,
 ): Decision {
   const { rootCause, amountMinor } = ctx;
 
@@ -120,13 +126,34 @@ export function evaluate(
         ? policy.probabilities.escalate_human_high_value
         : policy.probabilities.escalate_human_ambiguous,
       reasonCodes: isHighValue
-        ? ["HIGH_VALUE_CASE", "AMOUNT_EXCEEDS_AUTO_LIMIT", "REQUIRES_HUMAN_REVIEW"]
+        ? [
+            "HIGH_VALUE_CASE",
+            "AMOUNT_EXCEEDS_AUTO_LIMIT",
+            "REQUIRES_HUMAN_REVIEW",
+          ]
         : ["AMBIGUOUS_CASE", "REQUIRES_HUMAN_REVIEW"],
       expectedRecoveryMinor: isHighValue ? amountMinor : null,
     };
   }
 
   // Known, low-value failures → automated recovery action (§13 catalog).
+  // §17#8 stopping rule: terminal root causes halt recovery immediately
+  // (hard decline, fraud) — no amount of retries or payment links can help.
+  const isTerminal = policy.terminal_root_causes.includes(rootCause);
+  if (isTerminal) {
+    return {
+      actionClass: "STOP_RECOVERY",
+      requiresHuman: false,
+      probability: 0,
+      reasonCodes: [
+        "TERMINAL_DECLINE",
+        "RECOVERY_FUTILE",
+        "STOPPING_RULE_APPLIED",
+      ],
+      expectedRecoveryMinor: null,
+    };
+  }
+
   const isRetryable = policy.retryable_root_causes.includes(rootCause);
   const actionClass = isRetryable ? "RETRY_LATER" : "CREATE_PAYMENT_LINK";
   return {
@@ -137,7 +164,8 @@ export function evaluate(
         ? policy.probabilities.create_payment_link
         : policy.probabilities.retry_later,
     reasonCodes: ["WITHIN_AUTO_LIMIT", "RECOVERY_WINDOW_OPEN", "POLICY_OK"],
-    expectedRecoveryMinor: actionClass === "CREATE_PAYMENT_LINK" ? amountMinor : null,
+    expectedRecoveryMinor:
+      actionClass === "CREATE_PAYMENT_LINK" ? amountMinor : null,
   };
 }
 
@@ -148,7 +176,7 @@ export function evaluate(
  */
 export async function loadActivePolicy(
   supabase: SupabaseClient,
-  merchantId: string
+  merchantId: string,
 ): Promise<RecoveryPolicy | null> {
   const { data, error } = await supabase
     .from("policy_versions")
@@ -169,8 +197,9 @@ export async function loadActivePolicy(
 export async function makeDecision(
   supabase: SupabaseClient,
   merchantId: string,
-  ctx: DecisionContext
+  ctx: DecisionContext,
 ): Promise<PolicyDecision> {
-  const policy = (await loadActivePolicy(supabase, merchantId)) ?? DEFAULT_POLICY;
+  const policy =
+    (await loadActivePolicy(supabase, merchantId)) ?? DEFAULT_POLICY;
   return { ...evaluate(policy, ctx), policyLabel: policy.label };
 }

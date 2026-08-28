@@ -207,11 +207,15 @@ export function DemoWalkthrough() {
         });
         const json = await res.json().catch(() => null);
         if (res.ok && json?.count > 0) {
-          setActionStatus(
-            `Created ${json.count} real payment link(s). Links: ${json.executed
+          const fallbackCount = json.executed?.filter((a: { fallback?: boolean }) => a.fallback).length;
+          const linkMsg = fallbackCount > 0
+            ? `Created ${json.count} payment link(s) (${fallbackCount} from test-account fallback). Links: ${json.executed
               ?.map((a: { short_url: string }) => a.short_url)
               .join(" ")}`
-          );
+            : `Created ${json.count} real payment link(s). Links: ${json.executed
+              ?.map((a: { short_url: string }) => a.short_url)
+              .join(" ")}`;
+          setActionStatus(linkMsg);
         } else {
           setActionStatus("No due actions to execute yet.");
         }
@@ -298,22 +302,20 @@ export function DemoWalkthrough() {
           {STEPS.map((s, i) => (
             <div
               key={s.id}
-              className={`flex items-center gap-3 text-sm font-mono ${
-                i === currentStep
+              className={`flex items-center gap-3 text-sm font-mono ${i === currentStep
                   ? "text-foreground"
                   : i < currentStep
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/40"
-              }`}
+                    ? "text-muted-foreground"
+                    : "text-muted-foreground/40"
+                }`}
             >
               <div
-                className={`w-8 h-8 flex items-center justify-center rounded-full text-xs transition-colors ${
-                  i === currentStep
+                className={`w-8 h-8 flex items-center justify-center rounded-full text-xs transition-colors ${i === currentStep
                     ? "bg-foreground text-background"
                     : i < currentStep
-                    ? "bg-muted text-foreground"
-                    : "bg-muted/30 text-muted-foreground"
-                }`}
+                      ? "bg-muted text-foreground"
+                      : "bg-muted/30 text-muted-foreground"
+                  }`}
               >
                 {i < currentStep ? (
                   <CheckCircle className="w-4 h-4" />
@@ -355,17 +357,16 @@ export function DemoWalkthrough() {
                 {step.stageDetail}
               </code>
               <span
-                className={`text-xs font-mono px-3 py-1 rounded-full ${
-                  currentStep >= STEPS.findIndex((s) => s.id === step.id)
+                className={`text-xs font-mono px-3 py-1 rounded-full ${currentStep >= STEPS.findIndex((s) => s.id === step.id)
                     ? "bg-emerald-500/10 text-emerald-500"
                     : "bg-slate-500/10 text-slate-500"
-                }`}
+                  }`}
               >
                 {recentCases.length > 0 && currentStep > 0
                   ? "Active"
                   : currentStep === 0
-                  ? "Waiting"
-                  : "Pending"}
+                    ? "Waiting"
+                    : "Pending"}
               </span>
             </div>
           </div>
@@ -496,7 +497,7 @@ export function DemoWalkthrough() {
             href="/dashboard"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            Open full dashboard
+            Open full recovery dashboard
             <ExternalLink className="w-4 h-4" />
           </Link>
         </div>

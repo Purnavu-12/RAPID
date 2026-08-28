@@ -7,7 +7,7 @@
 create view policy_analytics as
 select
     rc.merchant_id,
-    d.policy_label,
+    d.policy_version as policy_label,
     count(*) filter (where d.action_class = 'CREATE_PAYMENT_LINK') as payment_link_count,
     count(*) filter (where d.action_class = 'RETRY_LATER') as retry_later_count,
     count(*) filter (where d.action_class = 'ESCALATE_HUMAN') as escalate_human_count,
@@ -26,5 +26,5 @@ select
 from recovery_cases rc
 left join decisions d on d.risk_event_id = rc.case_id
 left join outcomes o on o.risk_event_id = rc.case_id
-group by rc.merchant_id, d.policy_label
+group by rc.merchant_id, d.policy_version
 ;

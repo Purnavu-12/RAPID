@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { RecoveryPayload, RecoveryCase, TrendPoint } from "@/lib/dashboard";
+import type {
+  RecoveryPayload,
+  RecoveryCase,
+  TrendPoint,
+} from "@/lib/dashboard";
 
 /**
  * Recovery dashboard data gateway.
@@ -48,7 +52,7 @@ interface RecoveryCaseRow {
  *  (production) and otherwise falls back to the seeded "Acme Retail" account
  *  the dashboard is bound to (single-tenant dev demo). */
 async function resolveMerchantId(
-  supabase: ReturnType<typeof createServerSupabaseClient>
+  supabase: ReturnType<typeof createServerSupabaseClient>,
 ) {
   const envId = process.env.RAPID_MERCHANT_ID;
   if (envId) return envId;
@@ -84,7 +88,7 @@ export async function GET() {
         ? Math.round((recoveredMinor / (recoveredMinor + atRiskMinor)) * 100)
         : 0;
     const latency = Math.round(
-      Number(metricsRow?.median_time_to_recovery_sec ?? 0)
+      Number(metricsRow?.median_time_to_recovery_sec ?? 0),
     );
 
     // 2) 7-day Recovery Funnel (§62), intake-day granularity → weekday labels
@@ -126,8 +130,20 @@ export async function GET() {
     const { data: rawCases, error: casesErr } = await cq;
     if (casesErr) throw casesErr;
 
-    const caseRows: RecoveryCaseRow[] = (rawCases as RecoveryCaseRow[] | null) ?? [];
-    const cases: RecoveryCase[] = caseRows.map((c) => ({
+    const caseRows: RecoveryCaseRow[] =
+      (rawCases as RecoveryCaseRow[] | null) ?? [];
+    // Defensive dedup: the recovery_cases view uses DISTINCT ON (risk_event_id)
+    // but if the view definition is stale on the server, duplicate case_ids
+    // can still arrive here and break React's keying in the cases table.
+    // Deduplicate by case_id, keeping the most recently updated row.
+    const byId = new Map<string, RecoveryCaseRow>();
+    for (const row of caseRows) {
+      const existing = byId.get(row.case_id);
+      if (!existing || (row.updated_at ?? "") > (existing.updated_at ?? "")) {
+        byId.set(row.case_id, row);
+      }
+    }
+    const cases: RecoveryCase[] = Array.from(byId.values()).map((c) => ({
       id: c.case_id,
       customer: c.customer_ref ?? "",
       riskType: c.risk_type,

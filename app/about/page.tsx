@@ -1,5 +1,6 @@
 import { ArrowRight, Shield, BarChart3, Users, Clock } from "lucide-react";
 import Link from "next/link";
+import { PageLayout } from "@/components/layout/page-layout";
 
 export const metadata = {
   title: "About RAPID — Revenue Autopilot",
@@ -32,8 +33,8 @@ const principles = [
 
 export default function AboutPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden noise-overlay">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-32 lg:py-48">
+    <PageLayout showWave={false}>
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
         <div className="max-w-3xl">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-8">
             <span className="w-8 h-px bg-foreground/30" />
@@ -78,6 +79,6 @@ export default function AboutPage() {
           })}
         </div>
       </div>
-    </main>
+    </PageLayout>
   );
 }

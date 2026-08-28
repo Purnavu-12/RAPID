@@ -26,7 +26,11 @@ describe("normalizeFailureCode (§11.1 rule-first normalization)", () => {
     ["insufficient_funds", "Insufficient Funds", "insufficient_funds"],
     ["balance_declined", "balance_declined", "insufficient_funds"],
     ["card_expired", "Card Expired", "card_expired"],
-    ["authentication_failure", "Authentication Failed", "authentication_failure"],
+    [
+      "authentication_failure",
+      "Authentication Failed",
+      "authentication_failure",
+    ],
     ["invalid_cvv", "Security code is invalid", "authentication_failure"],
     ["gateway_timeout", "Gateway Timeout", "issuer_timeout"],
     ["", "timed out", "issuer_timeout"], // reason-only timeout (space, not underscore)
@@ -71,7 +75,10 @@ describe("evaluate (§14 Decision Engine + §16 policy table, now data-driven)",
   // Wave 1.2 makes the policy a value: `evaluate(policy, ctx)` is pure, and
   // `DEFAULT_POLICY` reproduces the prior v1.4 hardcoded values exactly.
   it("low-value Insufficient Funds → CREATE_PAYMENT_LINK (P=.84)", () => {
-    const d = evaluate(DEFAULT_POLICY, { rootCause: "Insufficient Funds", amountMinor: 59900 });
+    const d = evaluate(DEFAULT_POLICY, {
+      rootCause: "Insufficient Funds",
+      amountMinor: 59900,
+    });
     expect(d.actionClass).toBe("CREATE_PAYMENT_LINK");
     expect(d.requiresHuman).toBe(false);
     expect(d.probability).toBe(0.84);
@@ -80,20 +87,29 @@ describe("evaluate (§14 Decision Engine + §16 policy table, now data-driven)",
   });
 
   it("Gateway Failure → RETRY_LATER (P=.65)", () => {
-    const d = evaluate(DEFAULT_POLICY, { rootCause: "Gateway Failure", amountMinor: 199900 });
+    const d = evaluate(DEFAULT_POLICY, {
+      rootCause: "Gateway Failure",
+      amountMinor: 199900,
+    });
     expect(d.actionClass).toBe("RETRY_LATER");
     expect(d.requiresHuman).toBe(false);
     expect(d.probability).toBe(0.65);
   });
 
   it("Authentication → RETRY_LATER (P=.65)", () => {
-    expect(evaluate(DEFAULT_POLICY, { rootCause: "Authentication", amountMinor: 9900 }).actionClass).toBe(
-      "RETRY_LATER"
-    );
+    expect(
+      evaluate(DEFAULT_POLICY, {
+        rootCause: "Authentication",
+        amountMinor: 9900,
+      }).actionClass,
+    ).toBe("RETRY_LATER");
   });
 
   it("ambiguous → ESCALATE_HUMAN (P=.48)", () => {
-    const d = evaluate(DEFAULT_POLICY, { rootCause: "Ambiguous", amountMinor: 49900 });
+    const d = evaluate(DEFAULT_POLICY, {
+      rootCause: "Ambiguous",
+      amountMinor: 49900,
+    });
     expect(d.actionClass).toBe("ESCALATE_HUMAN");
     expect(d.requiresHuman).toBe(true);
     expect(d.probability).toBe(0.48);
@@ -103,11 +119,17 @@ describe("evaluate (§14 Decision Engine + §16 policy table, now data-driven)",
   describe("high-value threshold boundary (§16)", () => {
     it("amount == 500000 (₹5,000 exactly) is NOT escalated", () => {
       expect(
-        evaluate(DEFAULT_POLICY, { rootCause: "Insufficient Funds", amountMinor: 500_000 }).actionClass
+        evaluate(DEFAULT_POLICY, {
+          rootCause: "Insufficient Funds",
+          amountMinor: 500_000,
+        }).actionClass,
       ).toBe("CREATE_PAYMENT_LINK");
     });
     it("amount == 500001 (₹5,000.01) IS escalated", () => {
-      const d = evaluate(DEFAULT_POLICY, { rootCause: "Insufficient Funds", amountMinor: 500_001 });
+      const d = evaluate(DEFAULT_POLICY, {
+        rootCause: "Insufficient Funds",
+        amountMinor: 500_001,
+      });
       expect(d.actionClass).toBe("ESCALATE_HUMAN");
       expect(d.requiresHuman).toBe(true);
       expect(d.probability).toBe(0.55);
@@ -115,12 +137,16 @@ describe("evaluate (§14 Decision Engine + §16 policy table, now data-driven)",
     });
     it("high-value duplicate/exhausted-cause → ESCALATE_HUMAN", () => {
       expect(
-        evaluate(DEFAULT_POLICY, { rootCause: "Duplicate Transaction", amountMinor: 750_000 }).requiresHuman
+        evaluate(DEFAULT_POLICY, {
+          rootCause: "Duplicate Transaction",
+          amountMinor: 750_000,
+        }).requiresHuman,
       ).toBe(true);
     });
     it("low-value ambiguous → ESCALATE_HUMAN (ambiguous beats amount)", () => {
       expect(
-        evaluate(DEFAULT_POLICY, { rootCause: "Ambiguous", amountMinor: 100 }).actionClass
+        evaluate(DEFAULT_POLICY, { rootCause: "Ambiguous", amountMinor: 100 })
+          .actionClass,
       ).toBe("ESCALATE_HUMAN");
     });
   });
@@ -143,11 +169,10 @@ describe("policy-as-data (§4.3 loadActivePolicy + §4.7 graceful degradation)",
   it("falls back to DEFAULT_POLICY (v1.4) when no active row exists (§4.7)", async () => {
     // No active policy in the DB → makeDecision must still produce the
     // v1.4 behaviour exactly (behavior-preserving migration to data).
-    const d = await makeDecision(
-      mockSupabase(null),
-      "merchant-1",
-      { rootCause: "Insufficient Funds", amountMinor: 59900 }
-    );
+    const d = await makeDecision(mockSupabase(null), "merchant-1", {
+      rootCause: "Insufficient Funds",
+      amountMinor: 59900,
+    });
     expect(d.actionClass).toBe("CREATE_PAYMENT_LINK");
     expect(d.probability).toBe(0.84);
     expect(d.policyLabel).toBe("v1.4"); // fallback label surfaced downstream
@@ -157,7 +182,7 @@ describe("policy-as-data (§4.3 loadActivePolicy + §4.7 graceful degradation)",
     const d = await makeDecision(
       mockSupabase({ version: 2, rules: { not_a_policy: true } }),
       "merchant-1",
-      { rootCause: "Insufficient Funds", amountMinor: 59900 }
+      { rootCause: "Insufficient Funds", amountMinor: 59900 },
     );
     expect(d.actionClass).toBe("CREATE_PAYMENT_LINK");
     expect(d.policyLabel).toBe("v1.4");
@@ -174,6 +199,7 @@ describe("policy-as-data (§4.3 loadActivePolicy + §4.7 graceful degradation)",
       max_attempts: 5,
       failure_window_seconds: 3_600,
       retryable_root_causes: ["Gateway Failure", "Authentication"],
+      terminal_root_causes: ["Fraud", "Duplicate Transaction"],
       probabilities: {
         create_payment_link: 0.84,
         retry_later: 0.65,
@@ -184,7 +210,7 @@ describe("policy-as-data (§4.3 loadActivePolicy + §4.7 graceful degradation)",
     const d = await makeDecision(
       mockSupabase({ version: 2, status: "active", rules: custom }),
       "merchant-1",
-      { rootCause: "Insufficient Funds", amountMinor: 450_000 }
+      { rootCause: "Insufficient Funds", amountMinor: 450_000 },
     );
     expect(d.actionClass).toBe("ESCALATE_HUMAN");
     expect(d.policyLabel).toBe("custom-v2");
@@ -199,7 +225,10 @@ describe("policy-as-data (§4.3 loadActivePolicy + §4.7 graceful degradation)",
 
 describe("verifyRazorpaySignature (§48 forged-webhook defense)", () => {
   const secret = "whsec_test_secret";
-  const raw = JSON.stringify({ event: "payment_link.paid", event_id: "evt_123" });
+  const raw = JSON.stringify({
+    event: "payment_link.paid",
+    event_id: "evt_123",
+  });
   const sig = createHmac("sha256", secret).update(raw, "utf8").digest("hex");
 
   it("accepts a valid signature", () => {
@@ -220,17 +249,17 @@ describe("verifyRazorpaySignature (§48 forged-webhook defense)", () => {
 describe("buildIdempotencyKey (§4.2/§28 idempotency)", () => {
   it("formats as case:<risk_event_id>:<action>:<attempt>", () => {
     expect(buildIdempotencyKey("re_abc", "CREATE_PAYMENT_LINK", 1)).toBe(
-      "case:re_abc:CREATE_PAYMENT_LINK:1"
+      "case:re_abc:CREATE_PAYMENT_LINK:1",
     );
   });
   it("defaults attemptNo to 1", () => {
     expect(buildIdempotencyKey("re_abc", "RETRY_LATER")).toBe(
-      "case:re_abc:RETRY_LATER:1"
+      "case:re_abc:RETRY_LATER:1",
     );
   });
   it("changes per attempt (retry is a new key, not a re-mint)", () => {
     expect(buildIdempotencyKey("re_abc", "CREATE_PAYMENT_LINK", 1)).not.toBe(
-      buildIdempotencyKey("re_abc", "CREATE_PAYMENT_LINK", 2)
+      buildIdempotencyKey("re_abc", "CREATE_PAYMENT_LINK", 2),
     );
   });
 });
@@ -246,24 +275,78 @@ describe("§45 scenario decision table (engine handles every failure type)", () 
     amount: number;
     expectedAction: string;
   }> = [
-    { name: "payment_failure_soft", errorCode: "insufficient_funds", errorReason: "Insufficient Funds", amount: 59900, expectedAction: "CREATE_PAYMENT_LINK" },
-    { name: "payment_failure_hard", errorCode: "card_declined", errorReason: "Card Declined", amount: 59900, expectedAction: "ESCALATE_HUMAN" },
-    { name: "gateway_timeout", errorCode: "gateway_timeout", errorReason: "Gateway Timeout", amount: 59900, expectedAction: "RETRY_LATER" },
-    { name: "insufficient_funds", errorCode: "insufficient_funds", errorReason: "Insufficient Funds", amount: 59900, expectedAction: "CREATE_PAYMENT_LINK" },
-    { name: "expired_instrument", errorCode: "card_expired", errorReason: "Card Expired", amount: 59900, expectedAction: "CREATE_PAYMENT_LINK" },
-    { name: "authentication_failure", errorCode: "authentication_failure", errorReason: "Authentication Failed", amount: 59900, expectedAction: "RETRY_LATER" },
-    { name: "subscription_failure", errorCode: "insufficient_funds", errorReason: "Insufficient Funds", amount: 59900, expectedAction: "CREATE_PAYMENT_LINK" },
-    { name: "provider_duplicate_event", errorCode: "duplicate", errorReason: "Duplicate Transaction", amount: 59900, expectedAction: "CREATE_PAYMENT_LINK" },
-    { name: "high_value", errorCode: "insufficient_funds", errorReason: "Insufficient Funds", amount: 750_000, expectedAction: "ESCALATE_HUMAN" },
+    {
+      name: "payment_failure_soft",
+      errorCode: "insufficient_funds",
+      errorReason: "Insufficient Funds",
+      amount: 59900,
+      expectedAction: "CREATE_PAYMENT_LINK",
+    },
+    {
+      name: "payment_failure_hard",
+      errorCode: "card_declined",
+      errorReason: "Card Declined",
+      amount: 59900,
+      expectedAction: "ESCALATE_HUMAN",
+    },
+    {
+      name: "gateway_timeout",
+      errorCode: "gateway_timeout",
+      errorReason: "Gateway Timeout",
+      amount: 59900,
+      expectedAction: "RETRY_LATER",
+    },
+    {
+      name: "insufficient_funds",
+      errorCode: "insufficient_funds",
+      errorReason: "Insufficient Funds",
+      amount: 59900,
+      expectedAction: "CREATE_PAYMENT_LINK",
+    },
+    {
+      name: "expired_instrument",
+      errorCode: "card_expired",
+      errorReason: "Card Expired",
+      amount: 59900,
+      expectedAction: "CREATE_PAYMENT_LINK",
+    },
+    {
+      name: "authentication_failure",
+      errorCode: "authentication_failure",
+      errorReason: "Authentication Failed",
+      amount: 59900,
+      expectedAction: "RETRY_LATER",
+    },
+    {
+      name: "subscription_failure",
+      errorCode: "insufficient_funds",
+      errorReason: "Insufficient Funds",
+      amount: 59900,
+      expectedAction: "CREATE_PAYMENT_LINK",
+    },
+    {
+      name: "provider_duplicate_event",
+      errorCode: "duplicate",
+      errorReason: "Duplicate Transaction",
+      amount: 59900,
+      expectedAction: "STOP_RECOVERY",
+    },
+    {
+      name: "high_value",
+      errorCode: "insufficient_funds",
+      errorReason: "Insufficient Funds",
+      amount: 750_000,
+      expectedAction: "ESCALATE_HUMAN",
+    },
   ];
 
-  it.each(scenarios)(
-    "$name → $expectedAction",
-    (s) => {
-      const code = normalizeFailureCode(s.errorCode, s.errorReason);
-      const diag = diagnose(code);
-      const d = evaluate(DEFAULT_POLICY, { rootCause: diag.rootCause, amountMinor: s.amount });
-      expect(d.actionClass).toBe(s.expectedAction);
-    }
-  );
+  it.each(scenarios)("$name → $expectedAction", (s) => {
+    const code = normalizeFailureCode(s.errorCode, s.errorReason);
+    const diag = diagnose(code);
+    const d = evaluate(DEFAULT_POLICY, {
+      rootCause: diag.rootCause,
+      amountMinor: s.amount,
+    });
+    expect(d.actionClass).toBe(s.expectedAction);
+  });
 });

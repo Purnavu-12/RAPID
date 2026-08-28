@@ -1,6 +1,6 @@
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { PricingSection } from "@/components/landing/pricing-section";
-import { FooterSection } from "@/components/landing/footer-section";
+import { PageLayout } from "@/components/layout/page-layout";
 
 /** Pricing — social proof + plans, as its own route. */
 export const metadata = {
@@ -11,10 +11,9 @@ export const metadata = {
 
 export default function PricingPage() {
   return (
-    <>
+    <PageLayout showWave={false}>
       <TestimonialsSection />
       <PricingSection />
-      <FooterSection />
-    </>
+    </PageLayout>
   );
 }

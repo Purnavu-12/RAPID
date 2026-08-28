@@ -7,8 +7,9 @@ import { CasesTable } from "@/components/dashboard/cases-table";
 import { EscalationsTable } from "@/components/dashboard/escalations-table";
 import { ProofTab } from "@/components/dashboard/proof-tab";
 import { SimulationLab } from "@/components/dashboard/simulation-lab";
-import { ArrowLeft, RefreshCw, Clock, PlayCircle, Zap } from "lucide-react";
+import { RefreshCw, Clock, PlayCircle, Zap } from "lucide-react";
 import Link from "next/link";
+import { SiteHeader } from "@/components/layout/site-header";
 import type { RecoveryPayload } from "@/lib/dashboard";
 import type { ExecutedAction } from "@/lib/actions/executor";
 
@@ -88,12 +89,10 @@ export function DashboardShell() {
         const short = json?.caseId?.slice(0, 8);
         setSimulateStatus(
           simulateStage === "failed"
-            ? `Created real test order ${
-                json?.orderId ? `…${json.orderId.slice(-8)}` : ""
-              } — new at-risk case ${short ? `…${short}` : ""}.`
-            : `Confirmed recovery via payment link ${
-                json?.paymentLinkId ? `…${json.paymentLinkId.slice(-8)}` : ""
-              } — case ${short ? `…${short}` : ""} RECOVERED.`
+            ? `Created real test order ${json?.orderId ? `…${json.orderId.slice(-8)}` : ""
+            } — new at-risk case ${short ? `…${short}` : ""}.`
+            : `Confirmed recovery via payment link ${json?.paymentLinkId ? `…${json.paymentLinkId.slice(-8)}` : ""
+            } — case ${short ? `…${short}` : ""} RECOVERED.`
         );
         fetchData();
       })
@@ -134,15 +133,22 @@ export function DashboardShell() {
 
   return (
     <div className="min-h-screen bg-background text-foreground noise-overlay">
-      {/* Top bar */}
-      <header className="border-b border-foreground/10">
+      <SiteHeader />
+      
+      {/* Dashboard-specific header bar */}
+      <header className="relative z-10 border-b border-foreground/10 pt-14">
         <div className="max-w-350 mx-auto px-6 lg:px-12 h-14 flex items-center justify-between">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
             Back to site
+          </Link>
+          <Link
+            href="/demo"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Guided demo
           </Link>
           <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -164,7 +170,7 @@ export function DashboardShell() {
         </div>
       </header>
 
-      <main className="max-w-350 mx-auto px-6 lg:px-12 py-12 lg:py-16">
+      <main className="relative z-10 max-w-350 mx-auto px-6 lg:px-12 py-12 lg:py-16">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12">
           <div>
@@ -177,6 +183,11 @@ export function DashboardShell() {
               <br />
               <span className="text-muted-foreground">dashboard.</span>
             </h1>
+            <p className="mt-4 text-sm text-muted-foreground font-mono max-w-2xl">
+              Live recovery pipeline for Acme Retail (test). Detects failed
+              payments, diagnoses root causes, and auto-recovers via Razorpay
+              payment links. Data updates every 10 s.
+            </p>
           </div>
           <button
             type="button"

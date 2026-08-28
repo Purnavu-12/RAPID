@@ -1,4 +1,3 @@
-import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
 import { AnimatedPipeline } from "@/components/landing/animated-pipeline";
 import { LiveRecoveryWidget } from "@/components/landing/live-recovery-widget";
@@ -6,7 +5,7 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { MetricsSection } from "@/components/landing/metrics-section";
 import { ImpactComparison } from "@/components/landing/impact-comparison";
 import { CtaSection } from "@/components/landing/cta-section";
-import { FooterSection } from "@/components/landing/footer-section";
+import { PageLayout } from "@/components/layout/page-layout";
 
 /** Home — a focused entry point. Detailed topics live on their own multipage
  * routes (/platform, /how-it-works, /pricing) so every topic has a real URL
@@ -19,8 +18,7 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-x-hidden noise-overlay">
-      <Navigation />
+    <PageLayout showWave={true}>
       <HeroSection />
       <AnimatedPipeline />
       <LiveRecoveryWidget />
@@ -47,7 +45,6 @@ export default function Home() {
         }}
       />
       <CtaSection />
-      <FooterSection />
-    </main>
+    </PageLayout>
   );
 }

@@ -51,20 +51,20 @@ Content-Type: application/json`,
 ];
 
 const features = [
-  { 
-    title: "Webhook-first", 
+  {
+    title: "Webhook-first",
     description: "Lightweight receiver. No inference in the request path."
   },
-  { 
-    title: "Idempotent", 
+  {
+    title: "Idempotent",
     description: "Every event and action has a deterministic key."
   },
-  { 
-    title: "Replayable", 
+  {
+    title: "Replayable",
     description: "Events persist raw + normalized for replay."
   },
-  { 
-    title: "Versioned APIs", 
+  {
+    title: "Versioned APIs",
     description: "Stable, schema-versioned contracts."
   },
 ];
@@ -128,9 +128,8 @@ export function DevelopersSection() {
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
           {/* Left: Content */}
           <div
-            className={`transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
+            className={`transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              }`}
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
@@ -144,15 +143,14 @@ export function DevelopersSection() {
             <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
               A small webhook surface, idempotent execution, and versioned events you can replay at any time. No LLM in the request path — only in the bounded decision layer.
             </p>
-            
+
             {/* Features */}
             <div className="grid grid-cols-2 gap-6">
               {features.map((feature, index) => (
                 <div
                   key={feature.title}
-                  className={`transition-all duration-500 ${
-                    isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                  }`}
+                  className={`transition-all duration-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                    }`}
                   style={{ transitionDelay: `${index * 50 + 200}ms` }}
                 >
                   <h3 className="font-medium mb-1">{feature.title}</h3>
@@ -161,12 +159,11 @@ export function DevelopersSection() {
               ))}
             </div>
           </div>
-          
+
           {/* Right: Code block */}
           <div
-            className={`lg:sticky lg:top-32 transition-all duration-700 delay-200 ${
-              isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
-            }`}
+            className={`lg:sticky lg:top-32 transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+              }`}
           >
             <div className="border border-foreground/10 overflow-hidden">
               {/* Tabs */}
@@ -176,11 +173,10 @@ export function DevelopersSection() {
                     key={example.label}
                     type="button"
                     onClick={() => { setActiveTab(idx); setCopied(false); }}
-                    className={`px-6 py-4 text-sm font-mono transition-colors relative ${
-                      activeTab === idx
+                    className={`px-6 py-4 text-sm font-mono transition-colors relative ${activeTab === idx
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     {example.label}
                     {activeTab === idx && (
@@ -202,13 +198,13 @@ export function DevelopersSection() {
                   )}
                 </button>
               </div>
-              
+
               {/* Code content */}
               <div className="p-8 font-mono text-sm bg-foreground/[0.01] min-h-[240px]">
                 <pre className="text-foreground/80">
                   {codeExamples[activeTab].code.split('\n').map((line, lineIndex) => (
-                    <div 
-                      key={`${activeTab}-${lineIndex}`} 
+                    <div
+                      key={`${activeTab}-${lineIndex}`}
                       className="leading-loose dev-code-line"
                       style={{ animationDelay: `${lineIndex * 80}ms` }}
                     >
@@ -231,16 +227,16 @@ export function DevelopersSection() {
                 </pre>
               </div>
             </div>
-            
+
             {/* Links */}
             <div className="mt-6 flex items-center gap-6 text-sm">
               <Link href="/docs" className="text-foreground hover:underline underline-offset-4">
                 Read the full docs
               </Link>
               <span className="text-foreground/20">|</span>
-              <a href="#" className="text-muted-foreground hover:text-foreground">
+              <Link href="/docs#api" className="text-muted-foreground hover:text-foreground">
                 API Reference
-              </a>
+              </Link>
             </div>
           </div>
         </div>

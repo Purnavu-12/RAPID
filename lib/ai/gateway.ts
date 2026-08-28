@@ -123,7 +123,7 @@ export function validateOutput(
   raw: string,
   modelVersion: string,
   promptVersion: string,
-  latencyMs: number
+  latencyMs: number,
 ): LlmDiagnosis | null {
   let parsed: unknown;
   try {
@@ -136,7 +136,12 @@ export function validateOutput(
   const obj = parsed as Record<string, unknown>;
 
   const rootCause = obj.rootCause;
-  if (typeof rootCause !== "string" || !ALLOWED_ROOT_CAUSES.includes(rootCause as (typeof ALLOWED_ROOT_CAUSES)[number])) {
+  if (
+    typeof rootCause !== "string" ||
+    !ALLOWED_ROOT_CAUSES.includes(
+      rootCause as (typeof ALLOWED_ROOT_CAUSES)[number],
+    )
+  ) {
     return null;
   }
 
@@ -146,12 +151,20 @@ export function validateOutput(
   }
 
   const evidenceCodes = obj.evidenceCodes;
-  if (!Array.isArray(evidenceCodes) || !evidenceCodes.every((e) => typeof e === "string")) {
+  if (
+    !Array.isArray(evidenceCodes) ||
+    !evidenceCodes.every((e) => typeof e === "string")
+  ) {
     return null;
   }
 
   const actionClass = obj.recommendedActionClass;
-  if (typeof actionClass !== "string" || !ALLOWED_ACTION_CLASSES.includes(actionClass as (typeof ALLOWED_ACTION_CLASSES)[number])) {
+  if (
+    typeof actionClass !== "string" ||
+    !ALLOWED_ACTION_CLASSES.includes(
+      actionClass as (typeof ALLOWED_ACTION_CLASSES)[number],
+    )
+  ) {
     return null;
   }
 
@@ -164,7 +177,8 @@ export function validateOutput(
     rootCause: rootCause as LlmDiagnosis["rootCause"],
     confidence,
     evidenceCodes,
-    recommendedActionClass: actionClass as LlmDiagnosis["recommendedActionClass"],
+    recommendedActionClass:
+      actionClass as LlmDiagnosis["recommendedActionClass"],
     reasonSummary,
     modelVersion,
     promptVersion,
@@ -217,15 +231,13 @@ function buildUserMessage(ctx: DiagnosisContext): string {
  */
 export async function diagnoseAmbiguous(
   context: DiagnosisContext,
-  opts: AiGatewayOptions = {}
+  opts: AiGatewayOptions = {},
 ): Promise<LlmDiagnosis | null> {
   const { timeoutMs, retries } = { ...DEFAULT_OPTIONS, ...opts };
 
   const apiKey = process.env.POOLSIDE_API_KEY;
   const baseUrl =
-    process.env.POOLSBASE_URL ||
-    process.env.POOLSIDE_BASE_URL ||
-    "https://inference.poolside.ai/v1";
+    process.env.POOLSIDE_BASE_URL || "https://inference.poolside.ai/v1";
   const model = process.env.POOLSIDE_MODEL || "poolside/laguna-s-2.1";
   const promptVersion = `recovery-diagnosis-v1`;
 
@@ -308,7 +320,7 @@ export async function diagnoseAmbiguous(
         content,
         modelVersion,
         promptVersion,
-        latencyMs
+        latencyMs,
       );
 
       if (!diagnosis) {

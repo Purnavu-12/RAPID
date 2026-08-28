@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -57,7 +57,7 @@ export function CaseChainViewer({ caseId, children }: ChainViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChain = async () => {
+  const fetchChain = useCallback(async () => {
     if (!open || events) return;
     setLoading(true);
     setError(null);
@@ -74,14 +74,14 @@ export function CaseChainViewer({ caseId, children }: ChainViewProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [caseId, open, events]);
 
   useEffect(() => {
     if (open && !events) {
       // Defer the fetch to avoid calling setState synchronously within an effect.
       setTimeout(() => void fetchChain(), 0);
     }
-  }, [open, events]);
+  }, [open, events, fetchChain]);
 
   const formatHash = (h: string | null) =>
     h ? `${h.slice(0, 8)}…${h.slice(-8)}` : "GENESIS";

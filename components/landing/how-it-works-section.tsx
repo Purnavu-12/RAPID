@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment } from "react";
 
 const steps = [
   {
@@ -111,9 +111,8 @@ export function HowItWorksSection() {
             Recovery pipeline
           </span>
           <h2
-            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
+            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
           >
             Detect. Diagnose.
             <br />
@@ -130,9 +129,8 @@ export function HowItWorksSection() {
                 key={step.number}
                 type="button"
                 onClick={() => setActiveStep(index)}
-                className={`w-full text-left py-8 border-b border-background/10 transition-all duration-500 group ${
-                  activeStep === index ? "opacity-100" : "opacity-40 hover:opacity-70"
-                }`}
+                className={`w-full text-left py-8 border-b border-background/10 transition-all duration-500 group ${activeStep === index ? "opacity-100" : "opacity-40 hover:opacity-70"
+                  }`}
               >
                 <div className="flex items-start gap-6">
                   <span className="font-display text-3xl text-background/30">{step.number}</span>
@@ -143,11 +141,11 @@ export function HowItWorksSection() {
                     <p className="text-background/60 leading-relaxed">
                       {step.description}
                     </p>
-                    
+
                     {/* Progress indicator */}
                     {activeStep === index && (
                       <div className="mt-4 h-px bg-background/20 overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-background w-0"
                           style={{
                             animation: 'progress 5s linear forwards'
@@ -178,10 +176,10 @@ export function HowItWorksSection() {
               <div className="p-8 font-mono text-sm min-h-[280px]">
                 <pre className="text-background/70">
                   {steps[activeStep].code.split('\n').map((line, lineIndex) => (
-                    <div 
-                      key={`${activeStep}-${lineIndex}`} 
+                    <div
+                      key={`${activeStep}-${lineIndex}`}
                       className="leading-loose code-line-reveal"
-                      style={{ 
+                      style={{
                         animationDelay: `${lineIndex * 80}ms`,
                       }}
                     >
@@ -215,21 +213,18 @@ export function HowItWorksSection() {
 
         {/* Full audit chain reference */}
         <div
-          className={`mt-16 lg:mt-24 transition-all duration-700 delay-300 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
+          className={`mt-16 lg:mt-24 transition-all duration-700 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
         >
           <p className="font-mono text-xs text-background/40 uppercase tracking-widest mb-4">
             The complete recovery chain is append-only and traceable
           </p>
           <div className="flex flex-wrap items-center gap-2 text-sm font-mono text-background/30">
             {pipelineStages.map((stage, i) => (
-              <>
+              <Fragment key={stage}>
                 <span
-                  key={stage}
-                  className={`px-3 py-1 border border-background/10 transition-colors ${
-                    isVisible ? "opacity-100" : "opacity-0"
-                  }`}
+                  className={`px-3 py-1 border border-background/10 transition-colors ${isVisible ? "opacity-100" : "opacity-0"
+                    }`}
                   style={{ transitionDelay: `${i * 80}ms` }}
                 >
                   {stage}
@@ -237,7 +232,7 @@ export function HowItWorksSection() {
                 {i < pipelineStages.length - 1 && (
                   <span className="text-background/20">→</span>
                 )}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>
