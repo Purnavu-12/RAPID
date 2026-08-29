@@ -12,7 +12,7 @@ const footerLinks = {
   Developers: [
     { name: "Documentation", href: "/docs" },
     { name: "API Reference", href: "/docs/40-api-architecture" },
-    { name: "Webhooks", href: "/docs/9-webhook-ingestion" },
+    { name: "Webhooks", href: "/docs/9-webhook-ingestion-architecture" },
     { name: "Status", href: "https://status.razorpay.com" },
   ],
   Company: [
