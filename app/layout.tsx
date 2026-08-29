@@ -1,5 +1,5 @@
 import React from "react"
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -20,6 +20,13 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: '--font-jetbrains'
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  userScalable: true,
+  themeColor: '#f7f7f5',
+}
 
 export const metadata: Metadata = {
   title: 'RAPID — Revenue Autopilot for Intelligent Payment Recovery',
