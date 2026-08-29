@@ -72,7 +72,6 @@ export function EscalationsTable() {
   };
 
   useEffect(() => {
-    // Defer the fetch to avoid calling setState synchronously within an effect.
     setTimeout(() => void fetchEscalated(), 0);
   }, []);
 

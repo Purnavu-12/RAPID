@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /demo
+Disallow: /api/
+Disallow: /about

@@ -26,11 +26,11 @@ export default function Home() {
       <MetricsSection />
       <ImpactComparison
         baseline={{
-          recoveryRate: 0,
+          recoveryRate: 5,
           revenueRecovered: 0,
           avgTimeToRecovery: 86400,
-          escalationRate: 100,
-          duplicateActions: 4,
+          escalationRate: 65,
+          duplicateActions: 2,
           policyViolations: 3,
           casesHandled: 0,
         }}

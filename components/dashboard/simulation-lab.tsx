@@ -123,11 +123,11 @@ export function SimulationLab() {
       </header>
 
       <p className="mt-3 text-sm text-muted-foreground max-w-2xl">
-        Generates real Razorpay test resources (Orders + Payment Links) across
-        every payment-failure type so you can watch the engine diagnose →
-        decide → act on each one. The WITH-vs-WITHOUT run makes the engine&apos;s
-        incremental recovery lift measurable against a no-automation baseline.
-        Records land in the audit trail below.
+        Generates test recovery events across every payment-failure type so
+        you can watch the engine diagnose → decide → act on each one. The
+        WITH-vs-WITHOUT run makes the engine&apos;s incremental recovery lift
+        measurable against a no-automation baseline. Records land in the audit
+        trail below.
       </p>
 
       {status && (

@@ -39,8 +39,8 @@ export function Navigation() {
     >
       <nav
         className={`mx-auto transition-all duration-500 ${isScrolled || isMobileMenuOpen
-            ? "bg-background/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-300"
-            : "bg-transparent max-w-350"
+          ? "bg-background/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-75"
+          : "bg-transparent max-w-87.5"
           }`}
       >
         <div
@@ -125,8 +125,8 @@ export function Navigation() {
         {/* Mobile Menu - Full Screen Overlay */}
         <div
           className={`md:hidden fixed inset-0 bg-background z-40 transition-all duration-500 ${isMobileMenuOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
             }`}
           style={{ top: 0 }}
         >
@@ -139,8 +139,8 @@ export function Navigation() {
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-5xl font-display text-foreground hover:text-muted-foreground transition-all duration-500 ${isMobileMenuOpen
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4"
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-4"
                     }`}
                   style={{
                     transitionDelay: isMobileMenuOpen ? `${i * 75}ms` : "0ms",
@@ -154,8 +154,8 @@ export function Navigation() {
             {/* Bottom CTAs */}
             <div
               className={`flex gap-4 pt-8 border-t border-foreground/10 transition-all duration-500 ${isMobileMenuOpen
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4"
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-4"
                 }`}
               style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
             >

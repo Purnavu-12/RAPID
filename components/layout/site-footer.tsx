@@ -13,8 +13,8 @@ const footerLinks = {
   ],
   Developers: [
     { name: "Documentation", href: "/docs" },
-    { name: "API Reference", href: "/docs#api" },
-    { name: "Webhooks", href: "/docs#webhook" },
+    { name: "API Reference", href: "/docs/40-api-architecture" },
+    { name: "Webhooks", href: "/docs/9-webhook-ingestion" },
     { name: "Status", href: "https://status.razorpay.com" },
   ],
   Company: [
@@ -26,7 +26,7 @@ const footerLinks = {
   Legal: [
     { name: "Privacy", href: "https://razorpay.com/privacy" },
     { name: "Terms", href: "https://razorpay.com/terms" },
-    { name: "Security", href: "/about#security" },
+    { name: "Security", href: "/platform#security" },
   ],
 };
 
@@ -49,7 +49,7 @@ export function SiteFooter({ showWave = true }: SiteFooterProps) {
         </div>
       )}
 
-      <div className="relative z-10 max-w-350 mx-auto px-6 lg:px-12">
+      <div className="relative z-10 max-w-87.5 mx-auto px-6 lg:px-12">
         {/* Main Footer */}
         <div className="py-16 lg:py-24">
           <div className="grid grid-cols-2 md:grid-cols-6 gap-12 lg:gap-8">
@@ -94,9 +94,9 @@ export function SiteFooter({ showWave = true }: SiteFooterProps) {
                           href={link.href}
                           {...(isExternal
                             ? {
-                                target: "_blank",
-                                rel: "noopener noreferrer",
-                              }
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                            }
                             : {})}
                           className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2"
                         >

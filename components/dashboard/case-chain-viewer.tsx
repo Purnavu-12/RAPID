@@ -78,7 +78,6 @@ export function CaseChainViewer({ caseId, children }: ChainViewProps) {
 
   useEffect(() => {
     if (open && !events) {
-      // Defer the fetch to avoid calling setState synchronously within an effect.
       setTimeout(() => void fetchChain(), 0);
     }
   }, [open, events, fetchChain]);

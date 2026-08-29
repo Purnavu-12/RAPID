@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Play, Pause, SkipForward, CheckCircle, Clock, Copy, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, SkipForward, CheckCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 /** §37 metrics + §62 dashboard projections, read live from /api/recovery */
@@ -44,15 +44,8 @@ interface WalkthroughStep {
   description: string;
   stageLabel: string;
   stageDetail: string;
-  /** The action the user takes at this step */
-  action: {
-    label: string;
-    description: string;
-  };
   /** What the user should see as confirmation */
   successIndicator: string;
-  /** Whether this step requires a button click */
-  requiresAction: boolean;
 }
 
 const STEPS: WalkthroughStep[] = [
@@ -61,15 +54,10 @@ const STEPS: WalkthroughStep[] = [
     title: "Risk Detection",
     subtitle: "A payment fails and enters the recovery pipeline",
     description:
-      "RAPID listens for payment events. When a payment fails (insufficient funds, expired card, etc.), the webhook receiver validates the Razorpay signature, deduplicates, and creates a risk event — the recovery candidate.",
+      "RAPID listens for payment events. When a payment fails (insufficient funds, expired card, etc.), the webhook receiver validates the signature, deduplicates, and creates a risk event — the recovery candidate.",
     stageLabel: "RiskEvent",
     stageDetail: "Detected → new case in the audit chain",
-    action: {
-      label: "Record failed payment (test)",
-      description: "Creates a real Razorpay test order + signed payment.failed webhook",
-    },
     successIndicator: "A new case appears in the dashboard with root cause and amount",
-    requiresAction: true,
   },
   {
     id: "diagnose",
@@ -79,12 +67,7 @@ const STEPS: WalkthroughStep[] = [
       "Known failure codes (insufficient_funds, card_expired, authentication_failure) map directly — no LLM needed. Ambiguous cases escalate to human review. This keeps latency low and cost down.",
     stageLabel: "Diagnosis",
     stageDetail: "Rule-based classification with confidence score",
-    action: {
-      label: "Review the diagnosis",
-      description: "Open the dashboard to see the root cause assigned to your case",
-    },
     successIndicator: "The case shows a specific root cause (e.g. 'Insufficient Funds') with a confidence score",
-    requiresAction: false,
   },
   {
     id: "decide",
@@ -94,42 +77,27 @@ const STEPS: WalkthroughStep[] = [
       "The decision engine selects the highest-value permitted action based on root cause and amount. The policy engine then independently verifies: is the amount within the auto limit? Are attempts remaining? Is the recovery window open?",
     stageLabel: "PolicyCheck",
     stageDetail: "Deterministic verification of attempt limit, amount, window",
-    action: {
-      label: "See the policy decision",
-      description: "The case shows which action was chosen and why",
-    },
     successIndicator: "The action class appears (e.g. 'Payment link') with reason codes",
-    requiresAction: false,
   },
   {
     id: "execute",
     title: "Scheduled Execution",
-    subtitle: "A real Razorpay payment link is created",
+    subtitle: "The approved action is queued for execution",
     description:
-      "If approved and the action is CREATE_PAYMENT_LINK, the execution worker creates a real payment link via the Razorpay API. High-value or ambiguous cases stay queued for human review.",
+      "If approved, the execution worker processes the action in the recovery pipeline. High-value or ambiguous cases are queued for human review before any action is taken.",
     stageLabel: "ActionExecuted",
-    stageDetail: "Real provider resource created (order_id / payment_link.id)",
-    action: {
-      label: "Execute payment link (dev)",
-      description: "Trigger the cron to create a real payment link for open cases",
-    },
-    successIndicator: "A real payment link URL is created and stored on the action record",
-    requiresAction: true,
+    stageDetail: "Provider resource created (order_id / payment_link.id)",
+    successIndicator: "The action record shows the provider resource reference and timestamps",
   },
   {
     id: "recover",
     title: "Outcome Reconciliation",
-    subtitle: "The recovery is confirmed — money actually moved",
+    subtitle: "The recovery is confirmed — payment verified",
     description:
-      "A payment_link.paid webhook confirms the customer paid. The system reconciles this against the open case and records the outcome. Recovery is declared only when provider truth proves it.",
+      "A confirmation webhook verifies the customer completed the payment. The system reconciles this against the open case and records the outcome. Recovery is declared only when provider truth proves it.",
     stageLabel: "OutcomeObserved",
     stageDetail: "Status: RECOVERED — amount verified against provider",
-    action: {
-      label: "Confirm the recovery",
-      description: "Simulate the customer paying the link via a signed payment_link.paid webhook",
-    },
     successIndicator: "The case status changes to RECOVERED with the recovered amount",
-    requiresAction: true,
   },
   {
     id: "audit",
@@ -139,12 +107,7 @@ const STEPS: WalkthroughStep[] = [
       "Click any case in the dashboard to open the chain viewer. You can reconstruct the full journey: Event → Diagnosis → Decision → Policy → Action → Outcome — with timestamps, policy versions, and confidence scores.",
     stageLabel: "AuditEvent",
     stageDetail: "Immutable, traceable record of every transition",
-    action: {
-      label: "Inspect the audit trail",
-      description: "Open the dashboard and click any case to see the full chain",
-    },
     successIndicator: "The audit chain shows all 7 stages with timestamps and evidence",
-    requiresAction: false,
   },
 ];
 
@@ -152,13 +115,8 @@ const STEPS: WalkthroughStep[] = [
  *  one step at a time, narrating each stage and linking to live audit rows. */
 export function DemoWalkthrough() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [data, setData] = useState<RecoveryPayload | null>(null);
   const [loading, setLoading] = useState(true);
-  const [actionStatus, setActionStatus] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
-
-  const isDev = process.env.NODE_ENV !== "production";
 
   const fetchDashboard = async () => {
     try {
@@ -168,7 +126,6 @@ export function DemoWalkthrough() {
       if (res.ok) {
         const json = await res.json();
         setData(json);
-        setActionStatus(null);
       }
     } catch {
       // Silently fail — the demo continues with empty state
@@ -178,89 +135,10 @@ export function DemoWalkthrough() {
   };
 
   useEffect(() => {
-    // Defer the initial fetch to avoid synchronous setState in the effect body
-    const initial = () => fetchDashboard();
-    const t = setTimeout(initial, 0);
+    setTimeout(() => void fetchDashboard(), 0);
     const interval = setInterval(fetchDashboard, 10_000);
-    return () => {
-      clearTimeout(t);
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
-
-  const handleAction = async () => {
-    if (!isDev) return;
-
-    setActionLoading(true);
-    setActionStatus(null);
-
-    const step = STEPS[currentStep];
-    const isFailedStep = step.id === "detect";
-    const isExecuteStep = step.id === "execute";
-    const isRecoverStep = step.id === "recover";
-
-    try {
-      if (isExecuteStep) {
-        // Execute due actions
-        const res = await fetch("/api/cron/execute-actions?due=true", {
-          method: "POST",
-        });
-        const json = await res.json().catch(() => null);
-        if (res.ok && json?.count > 0) {
-          const fallbackCount = json.executed?.filter((a: { fallback?: boolean }) => a.fallback).length;
-          const linkMsg = fallbackCount > 0
-            ? `Created ${json.count} payment link(s) (${fallbackCount} from test-account fallback). Links: ${json.executed
-              ?.map((a: { short_url: string }) => a.short_url)
-              .join(" ")}`
-            : `Created ${json.count} real payment link(s). Links: ${json.executed
-              ?.map((a: { short_url: string }) => a.short_url)
-              .join(" ")}`;
-          setActionStatus(linkMsg);
-        } else {
-          setActionStatus("No due actions to execute yet.");
-        }
-      } else if (isRecoverStep) {
-        // Confirm recovery
-        const res = await fetch("/api/dev/simulate", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ stage: "recovered" }),
-        });
-        const json = await res.json().catch(() => null);
-        if (res.ok && json?.outcome === "RECOVERED") {
-          setActionStatus(
-            `Case ${json.caseId?.slice(-8)} confirmed RECOVERED via real payment link.`
-          );
-        } else {
-          setActionStatus(json?.error || "Recovery confirmation failed.");
-        }
-      } else if (isFailedStep) {
-        // Record failed payment
-        const res = await fetch("/api/dev/simulate", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ stage: "failed" }),
-        });
-        const json = await res.json().catch(() => null);
-        if (res.ok && json?.caseId) {
-          setActionStatus(
-            `Created real test order …${json.orderId?.slice(-8)} — new at-risk case …${json.caseId.slice(-8)}.`
-          );
-        } else {
-          setActionStatus(json?.error || "Failed payment simulation failed.");
-        }
-      }
-
-      // Refresh dashboard data after action
-      setTimeout(fetchDashboard, 2000);
-    } catch (e) {
-      setActionStatus(
-        `Error: ${e instanceof Error ? e.message : String(e)}`
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) setCurrentStep(currentStep + 1);
@@ -276,7 +154,7 @@ export function DemoWalkthrough() {
 
   return (
     <section className="py-16 lg:py-24 min-h-screen bg-background">
-      <div className="max-w-350 mx-auto px-6 lg:px-12">
+      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-12">
           <Link
@@ -292,8 +170,8 @@ export function DemoWalkthrough() {
           <p className="text-lg text-muted-foreground max-w-2xl">
             A step-by-step demo of how RAPID detects at-risk revenue,
             diagnoses root causes, selects policy-bounded actions, executes
-            through Razorpay, and verifies every recovery — with a complete
-            audit trail for each stage.
+            through the provider pipeline, and verifies every recovery —
+            with a complete audit trail for each stage.
           </p>
         </div>
 
@@ -303,18 +181,18 @@ export function DemoWalkthrough() {
             <div
               key={s.id}
               className={`flex items-center gap-3 text-sm font-mono ${i === currentStep
-                  ? "text-foreground"
-                  : i < currentStep
-                    ? "text-muted-foreground"
-                    : "text-muted-foreground/40"
+                ? "text-foreground"
+                : i < currentStep
+                  ? "text-muted-foreground"
+                  : "text-muted-foreground/40"
                 }`}
             >
               <div
                 className={`w-8 h-8 flex items-center justify-center rounded-full text-xs transition-colors ${i === currentStep
-                    ? "bg-foreground text-background"
-                    : i < currentStep
-                      ? "bg-muted text-foreground"
-                      : "bg-muted/30 text-muted-foreground"
+                  ? "bg-foreground text-background"
+                  : i < currentStep
+                    ? "bg-muted text-foreground"
+                    : "bg-muted/30 text-muted-foreground"
                   }`}
               >
                 {i < currentStep ? (
@@ -358,8 +236,8 @@ export function DemoWalkthrough() {
               </code>
               <span
                 className={`text-xs font-mono px-3 py-1 rounded-full ${currentStep >= STEPS.findIndex((s) => s.id === step.id)
-                    ? "bg-emerald-500/10 text-emerald-500"
-                    : "bg-slate-500/10 text-slate-500"
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : "bg-slate-500/10 text-slate-500"
                   }`}
               >
                 {recentCases.length > 0 && currentStep > 0
@@ -370,40 +248,6 @@ export function DemoWalkthrough() {
               </span>
             </div>
           </div>
-
-          {step.requiresAction && isDev && (
-            <div className="flex items-center gap-4 mb-6">
-              <Button
-                onClick={handleAction}
-                disabled={actionLoading}
-                className="bg-foreground hover:bg-foreground/90 text-background rounded-full group h-12 px-6"
-              >
-                {actionLoading ? (
-                  <Pause className="w-4 h-4 mr-2 animate-pulse" />
-                ) : (
-                  <Play className="w-4 h-4 mr-2" />
-                )}
-                {actionLoading ? "Running…" : step.action.label}
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {step.action.description}
-              </span>
-            </div>
-          )}
-
-          {step.requiresAction && !isDev && (
-            <div className="mb-6 p-4 border border-amber-500/20 bg-amber-500/5 rounded-lg">
-              <p className="text-sm font-mono text-amber-600">
-                {step.action.label} — available in development mode only.
-              </p>
-            </div>
-          )}
-
-          {actionStatus && (
-            <div className="mb-6 p-4 border border-foreground/10 bg-emerald-500/5 rounded-lg">
-              <p className="text-sm font-mono text-emerald-600">{actionStatus}</p>
-            </div>
-          )}
 
           {/* Current dashboard snapshot */}
           {!loading && (

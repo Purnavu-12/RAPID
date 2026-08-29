@@ -138,7 +138,7 @@ export function ImpactComparison({
       id="impact"
       className="relative py-24 lg:py-32 border-t border-foreground/10"
     >
-      <div className="max-w-350 mx-auto px-6 lg:px-12">
+      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-16">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">

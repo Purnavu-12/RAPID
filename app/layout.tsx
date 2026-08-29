@@ -25,7 +25,6 @@ export const metadata: Metadata = {
   title: 'RAPID — Revenue Autopilot for Intelligent Payment Recovery',
   description: 'Recover lost revenue automatically. RAPID detects at-risk payments, diagnoses the root cause with AI, picks the safest highest-value action, enforces policy guardrails, executes through Razorpay, and measures every outcome with a full audit trail.',
   keywords: ['revenue recovery', 'payment recovery', 'Razorpay', 'dunning', 'AI diagnosis', 'policy engine', 'audit trail'],
-  generator: 'RAPID',
   openGraph: {
     title: 'RAPID — Revenue Autopilot for Intelligent Payment Recovery',
     description: 'Recover lost revenue automatically. AI diagnosed, policy guarded, Razorpay powered.',

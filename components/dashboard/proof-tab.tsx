@@ -134,7 +134,6 @@ export function ProofTab() {
   };
 
   useEffect(() => {
-    // Defer the fetch to avoid calling setState synchronously within an effect.
     setTimeout(() => void fetchReport(), 0);
   }, []);
 
