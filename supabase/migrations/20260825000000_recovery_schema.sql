@@ -172,10 +172,34 @@ select
     coalesce(o.recovered_at, act.completed_at, re.detected_at) as updated_at
 from risk_events re
 left join customers cust on cust.customer_id = re.customer_id
-left join diagnoses diag on diag.risk_event_id = re.risk_event_id
-left join decisions dec  on dec.risk_event_id = re.risk_event_id and dec.attempt_no = 1
-left join actions act    on act.risk_event_id = re.risk_event_id
-left join outcomes o     on o.risk_event_id = re.risk_event_id
+left join lateral (
+    select d.*
+    from diagnoses d
+    where d.risk_event_id = re.risk_event_id
+    order by d.created_at desc, d.diagnosis_id desc
+    limit 1
+) diag on true
+left join lateral (
+    select d.*
+    from decisions d
+    where d.risk_event_id = re.risk_event_id
+    order by d.attempt_no desc, d.created_at desc, d.decision_id desc
+    limit 1
+) dec on true
+left join lateral (
+    select a.*
+    from actions a
+    where a.risk_event_id = re.risk_event_id
+    order by a.created_at desc, a.action_id desc
+    limit 1
+) act on true
+left join lateral (
+    select o.*
+    from outcomes o
+    where o.risk_event_id = re.risk_event_id
+    order by o.created_at desc, o.outcome_id desc
+    limit 1
+) o on true
 ;
 
 -- Single-row-per-merchant metric projection (§37 Key Metrics + §62 Overview).
@@ -206,7 +230,13 @@ select
         as median_time_to_recovery_sec,
     max(re.detected_at) as last_activity_at
 from risk_events re
-left join outcomes o on o.risk_event_id = re.risk_event_id
+left join lateral (
+    select o.*
+    from outcomes o
+    where o.risk_event_id = re.risk_event_id
+    order by o.created_at desc, o.outcome_id desc
+    limit 1
+) o on true
 group by re.merchant_id
 ;
 
@@ -223,6 +253,12 @@ select
            or o.status not in ('RECOVERED', 'WRITTEN_OFF', 'CANCELLED')
     ) as at_risk
 from risk_events re
-left join outcomes o on o.risk_event_id = re.risk_event_id
+left join lateral (
+    select o.*
+    from outcomes o
+    where o.risk_event_id = re.risk_event_id
+    order by o.created_at desc, o.outcome_id desc
+    limit 1
+) o on true
 group by re.merchant_id, date_trunc('day', re.detected_at)
 order by day;
