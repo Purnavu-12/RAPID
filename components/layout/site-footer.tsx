@@ -4,7 +4,9 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { AnimatedWave } from "@/components/landing/animated-wave";
 
-const footerLinks = {
+type FooterLink = { name: string; href: string; badge?: string };
+
+const footerLinks: Record<string, FooterLink[]> = {
   Product: [
     { name: "Platform", href: "/platform" },
     { name: "How it works", href: "/how-it-works" },
@@ -15,13 +17,14 @@ const footerLinks = {
     { name: "Documentation", href: "/docs" },
     { name: "API Reference", href: "/docs/40-api-architecture" },
     { name: "Webhooks", href: "/docs/9-webhook-ingestion-architecture" },
-    { name: "Status", href: "https://status.razorpay.com" },
+    { name: "Integration guide", href: "/docs/21-razorpay-integration-architecture" },
+    { name: "Reliability", href: "/docs/35-reliability-engineering" },
   ],
   Company: [
     { name: "About", href: "/about" },
-    { name: "Blog", href: "https://razorpay.com/blog" },
-    { name: "Careers", href: "https://razorpay.com/careers", badge: "Hiring" },
-    { name: "Contact", href: "https://razorpay.com/contact" },
+    { name: "Architecture", href: "/docs/6-high-level-architecture" },
+    { name: "Security", href: "/docs/33-security-architecture" },
+    { name: "Contact", href: "mailto:hello@rapid.example" },
   ],
   Legal: [
     { name: "Privacy", href: "https://razorpay.com/privacy" },
@@ -119,7 +122,7 @@ export function SiteFooter({ showWave = true }: SiteFooterProps) {
         {/* Bottom Bar */}
         <div className="py-8 border-t border-foreground/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            2025 RAPID. All rights reserved.
+            2026 RAPID. Architecture baseline v2.0.
           </p>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
