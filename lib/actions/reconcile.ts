@@ -38,7 +38,7 @@ type ProviderLink = PaymentLink & {
 function linkMatches(
   link: ProviderLink,
   riskEventId: string,
-  expectedAmount: number
+  expectedAmount: number,
 ): boolean {
   const notes = link.notes ?? {};
   if (notes.risk_event_id !== riskEventId) return false;
@@ -59,16 +59,24 @@ function linkMatches(
  */
 export async function reconcileUnknownActions(
   supabase: ReturnType<typeof createServerSupabaseClient>,
-  merchantId: string
+  merchantId: string,
 ): Promise<{
-  reconciled: Array<{ action_id: string; risk_event_id: string; provider_ref: string }>;
-  retried: Array<{ action_id: string; risk_event_id: string; newIdempotencyKey: string }>;
+  reconciled: Array<{
+    action_id: string;
+    risk_event_id: string;
+    provider_ref: string;
+  }>;
+  retried: Array<{
+    action_id: string;
+    risk_event_id: string;
+    newIdempotencyKey: string;
+  }>;
   errors: string[];
 }> {
   const { data: unknownActions, error: fetchErr } = await supabase
     .from("actions")
     .select(
-      "action_id, risk_event_id, action_class, idempotency_key, result, provider_ref, started_at, completed_at, scheduled_for"
+      "action_id, risk_event_id, action_class, idempotency_key, result, provider_ref, started_at, completed_at, scheduled_for",
     )
     .eq("merchant_id", merchantId)
     .eq("status", "UNKNOWN")
@@ -76,8 +84,16 @@ export async function reconcileUnknownActions(
 
   if (fetchErr) throw fetchErr;
 
-  const reconciled: { action_id: string; risk_event_id: string; provider_ref: string }[] = [];
-  const retried: { action_id: string; risk_event_id: string; newIdempotencyKey: string }[] = [];
+  const reconciled: {
+    action_id: string;
+    risk_event_id: string;
+    provider_ref: string;
+  }[] = [];
+  const retried: {
+    action_id: string;
+    risk_event_id: string;
+    newIdempotencyKey: string;
+  }[] = [];
   const errors: string[] = [];
 
   if (!unknownActions || unknownActions.length === 0) {
@@ -86,7 +102,7 @@ export async function reconcileUnknownActions(
 
   // Fetch the risk events for amount/currency matching.
   const riskEventIds = Array.from(
-    new Set(unknownActions.map((a: ActionRow) => a.risk_event_id))
+    new Set(unknownActions.map((a: ActionRow) => a.risk_event_id)),
   );
   const { data: riskEvents, error: reErr } = await supabase
     .from("risk_events")
@@ -97,10 +113,19 @@ export async function reconcileUnknownActions(
     return { reconciled, retried, errors };
   }
   const reMap = new Map(
-    (riskEvents || []).map((re: { risk_event_id: string; amount_minor: number | string; currency: string | null }) => [
-      re.risk_event_id,
-      { amount: Number(re.amount_minor), currency: String(re.currency || "INR") },
-    ])
+    (riskEvents || []).map(
+      (re: {
+        risk_event_id: string;
+        amount_minor: number | string;
+        currency: string | null;
+      }) => [
+        re.risk_event_id,
+        {
+          amount: Number(re.amount_minor),
+          currency: String(re.currency || "INR"),
+        },
+      ],
+    ),
   );
 
   // Query the provider for payment links matching our risk events.
@@ -110,7 +135,7 @@ export async function reconcileUnknownActions(
     providerLinks = (await listPaymentLinks({ limit: 50 })) as ProviderLink[];
   } catch (e) {
     errors.push(
-      `Provider query failed: ${e instanceof Error ? e.message : String(e)}`
+      `Provider query failed: ${e instanceof Error ? e.message : String(e)}`,
     );
     // Can't reconcile without provider access — leave UNKNOWN actions as-is.
     return { reconciled, retried, errors };
@@ -124,7 +149,7 @@ export async function reconcileUnknownActions(
     const match = providerLinks.find(
       (link) =>
         linkMatches(link, action.risk_event_id, expectedAmount) &&
-        (action.provider_ref === null || action.provider_ref === link.id)
+        (action.provider_ref === null || action.provider_ref === link.id),
     );
 
     if (match) {
@@ -149,7 +174,9 @@ export async function reconcileUnknownActions(
         .eq("action_id", action.action_id);
 
       if (updErr) {
-        errors.push(`Failed to reconcile ${action.action_id}: ${updErr.message}`);
+        errors.push(
+          `Failed to reconcile ${action.action_id}: ${updErr.message}`,
+        );
         continue;
       }
       reconciled.push({
@@ -192,7 +219,7 @@ export async function reconcileUnknownActions(
 /** Convenience: reconcile + return counts for the cron route. */
 export async function reconcileAndCount(
   supabase: ReturnType<typeof createServerSupabaseClient>,
-  merchantId: string
+  merchantId: string,
 ): Promise<{
   reconciled: number;
   retried: number;

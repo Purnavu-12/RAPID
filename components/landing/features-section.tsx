@@ -185,9 +185,8 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   return (
     <div
       ref={cardRef}
-      className={`group relative transition-all duration-700 ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
-      }`}
+      className={`group relative transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+        }`}
       style={{ transitionDelay: `${index * 100}ms` }}
     >
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 py-12 lg:py-20 border-b border-foreground/10">
@@ -195,7 +194,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         <div className="shrink-0">
           <span className="font-mono text-sm text-muted-foreground">{feature.number}</span>
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 grid lg:grid-cols-2 gap-8 items-center">
           <div>
@@ -213,7 +212,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
               ))}
             </ul>
           </div>
-          
+
           {/* Visual */}
           <div className="flex justify-center lg:justify-end">
             <div className="w-48 h-40 text-foreground">
@@ -248,7 +247,7 @@ export function FeaturesSection() {
       ref={sectionRef}
       className="relative py-24 lg:py-32"
     >
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
@@ -256,9 +255,8 @@ export function FeaturesSection() {
             Where revenue leaks
           </span>
           <h2
-            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
+            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
           >
             Every leak is a
             <br />

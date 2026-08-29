@@ -23,7 +23,7 @@ export function ArchitectureSection() {
 
   return (
     <section id="architecture" ref={sectionRef} className="relative py-24 lg:py-32 bg-foreground/[0.02] overflow-hidden">
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
@@ -31,9 +31,8 @@ export function ArchitectureSection() {
             Architecture
           </span>
           <h2
-            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
+            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
           >
             AI proposes.
             <br />
@@ -44,9 +43,8 @@ export function ArchitectureSection() {
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
           {/* Left: Description */}
           <div
-            className={`transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
-            }`}
+            className={`transition-all duration-700 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
+              }`}
           >
             <p className="text-xl text-muted-foreground leading-relaxed mb-8">
               The central architectural principle of RAPID: intelligence and money-moving authority are strictly separated. The LLM never invokes financial APIs directly. It interprets context, selects from an approved action vocabulary, and explains decisions. The deterministic Policy Engine is the only component that can authorize an action, and every execution is verified against authoritative provider state.
@@ -89,9 +87,8 @@ export function ArchitectureSection() {
 
           {/* Right: Pipeline visualization */}
           <div
-            className={`transition-all duration-700 delay-200 ${
-              isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
-            }`}
+            className={`transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+              }`}
           >
             <div className="border border-foreground/10 p-6 bg-background">
               <div className="text-xs font-mono text-muted-foreground mb-4">Recovery audit chain</div>

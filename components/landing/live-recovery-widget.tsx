@@ -64,8 +64,8 @@ export function LiveRecoveryWidget() {
   const atRisk = toRupees(m?.atRisk);
 
   return (
-    <section className="py-16 lg:py-20 border-t border-foreground/10">
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+    <section className="pt-24 lg:pt-32 pb-16 lg:pb-20 border-t border-foreground/10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="inline-flex items-center gap-2 text-sm font-mono text-muted-foreground mb-6">
           <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="animate-pulse inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />

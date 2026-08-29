@@ -60,8 +60,8 @@ export function DashboardShell() {
       <SiteHeader />
 
       {/* Dashboard-specific header bar */}
-      <header className="relative z-10 border-b border-foreground/10 pt-14">
-        <div className="max-w-87.5 mx-auto px-6 lg:px-12 h-14 flex items-center justify-between">
+      <header className="relative z-10 border-b border-foreground/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 h-14 flex items-center justify-between">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -94,7 +94,7 @@ export function DashboardShell() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-87.5 mx-auto px-6 lg:px-12 py-12 lg:py-16">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-24 lg:pt-28 pb-12 lg:pb-16">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12">
           <div>

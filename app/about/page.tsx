@@ -34,7 +34,7 @@ const principles = [
 export default function AboutPage() {
   return (
     <PageLayout showWave={false}>
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 pt-24 lg:pt-32 pb-16 lg:pb-24">
         <div className="max-w-3xl">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-8">
             <span className="w-8 h-px bg-foreground/30" />

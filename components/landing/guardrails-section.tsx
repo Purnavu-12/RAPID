@@ -65,7 +65,7 @@ export function GuardrailsSection() {
       ref={ref}
       className="bg-foreground text-background py-16 lg:py-20"
     >
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-12">
           <span className="inline-flex items-center gap-2 text-xs font-mono text-background/50 uppercase tracking-widest mb-4">
             <Shield className="w-3 h-3" />
@@ -82,11 +82,10 @@ export function GuardrailsSection() {
             return (
               <div
                 key={g.title}
-                className={`p-6 border border-background/10 transition-all duration-500 ${
-                  isVisible
+                className={`p-6 border border-background/10 transition-all duration-500 ${isVisible
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-4"
-                }`}
+                  }`}
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
                 <div className="flex items-start gap-4">

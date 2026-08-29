@@ -46,13 +46,12 @@ export function SecuritySection() {
 
   return (
     <section id="security" ref={sectionRef} className="relative py-24 lg:py-32 bg-foreground/[0.02] overflow-hidden">
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
           {/* Left: Content */}
           <div
-            className={`transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
+            className={`transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              }`}
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
@@ -73,9 +72,8 @@ export function SecuritySection() {
               {certifications.map((cert, index) => (
                 <span
                   key={cert}
-                  className={`px-4 py-2 border border-foreground/10 text-sm font-mono transition-all duration-500 ${
-                    isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                  }`}
+                  className={`px-4 py-2 border border-foreground/10 text-sm font-mono transition-all duration-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                    }`}
                   style={{ transitionDelay: `${index * 50 + 200}ms` }}
                 >
                   {cert}
@@ -89,9 +87,8 @@ export function SecuritySection() {
             {securityFeatures.map((feature, index) => (
               <div
                 key={feature.title}
-                className={`p-6 border border-foreground/10 hover:border-foreground/20 transition-all duration-500 group ${
-                  isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
-                }`}
+                className={`p-6 border border-foreground/10 hover:border-foreground/20 transition-all duration-500 group ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+                  }`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start gap-4">

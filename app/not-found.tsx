@@ -8,8 +8,8 @@ export default function NotFound() {
     <div className="relative min-h-screen overflow-x-hidden noise-overlay">
       <SiteHeader />
       
-      <main className="relative z-10 flex items-center justify-center pt-20">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center py-24 lg:py-32">
+      <main className="relative z-10 flex items-center justify-center pt-24 lg:pt-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center py-16 lg:py-24">
           <div className="space-y-2 mb-12">
             <span className="font-mono text-8xl font-display text-foreground/10">404</span>
             <h1 className="font-display text-5xl lg:text-7xl tracking-tight text-foreground">

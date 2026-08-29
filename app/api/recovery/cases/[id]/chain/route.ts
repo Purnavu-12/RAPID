@@ -28,7 +28,7 @@ type SupabaseClient = ReturnType<typeof createServerSupabaseClient>;
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -40,10 +40,7 @@ export async function GET(
 
     // 2. Fetch the joined recovery case data (Event → Diagnosis → Decision →
     //    Action → Outcome) from the recovery_cases projection (§62 Audit Viewer).
-    let q = supabase
-      .from("recovery_cases")
-      .select("*")
-      .eq("case_id", id);
+    let q = supabase.from("recovery_cases").select("*").eq("case_id", id);
     if (merchantId) q = q.eq("merchant_id", merchantId);
     const { data: caseRow, error: caseErr } = await q.maybeSingle();
     if (caseErr) throw caseErr;
@@ -79,7 +76,7 @@ export async function GET(
     console.error("[api/recovery/chain] error:", err);
     return NextResponse.json(
       { error: "Failed to fetch audit chain" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

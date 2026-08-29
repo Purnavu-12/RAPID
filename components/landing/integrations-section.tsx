@@ -35,12 +35,11 @@ export function IntegrationsSection() {
 
   return (
     <section id="integrations" ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div
-          className={`text-center max-w-3xl mx-auto mb-16 lg:mb-24 transition-all duration-700 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
+          className={`text-center max-w-3xl mx-auto mb-16 lg:mb-24 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
         >
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
             <span className="w-8 h-px bg-foreground/30" />
@@ -58,7 +57,7 @@ export function IntegrationsSection() {
         </div>
 
       </div>
-      
+
       {/* Full-width marquees outside container */}
       <div className="w-full mb-6">
         <div className="flex gap-6 marquee whitespace-nowrap">
@@ -79,7 +78,7 @@ export function IntegrationsSection() {
           ))}
         </div>
       </div>
-      
+
       {/* Reverse marquee */}
       <div className="w-full">
         <div className="flex gap-6 marquee-reverse">

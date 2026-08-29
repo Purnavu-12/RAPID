@@ -45,30 +45,30 @@ function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffi
 }
 
 const metrics = [
-  { 
-    value: 34, 
-    suffix: "%", 
+  {
+    value: 34,
+    suffix: "%",
     prefix: "",
     label: "Recovery rate",
     category: "Business",
   },
-  { 
-    value: 842, 
-    suffix: "K", 
+  {
+    value: 842,
+    suffix: "K",
     prefix: "₹",
     label: "Revenue recovered",
     category: "Business",
   },
-  { 
-    value: 7, 
-    suffix: "s", 
+  {
+    value: 7,
+    suffix: "s",
     prefix: "",
     label: "Avg. time to recovery",
     category: "Business",
   },
-  { 
-    value: 99, 
-    suffix: ".9%", 
+  {
+    value: 99,
+    suffix: ".9%",
     prefix: "",
     label: "Policy compliance",
     category: "Safety",
@@ -102,7 +102,7 @@ export function MetricsSection() {
 
   return (
     <section id="metrics" ref={sectionRef} className="relative py-24 lg:py-32 border-y border-foreground/10">
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16 lg:mb-24">
           <div>
@@ -111,9 +111,8 @@ export function MetricsSection() {
               Live recovery metrics
             </span>
             <h2
-              className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
+              className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
             >
               Measurable by
               <br />
@@ -129,27 +128,25 @@ export function MetricsSection() {
             <span>{timeStr}</span>
           </div>
         </div>
-        
+
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-foreground/10">
           {metrics.map((metric, index) => (
             <div
               key={metric.label}
-              className={`bg-background p-8 lg:p-12 transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              }`}
+              className={`bg-background p-8 lg:p-12 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <AnimatedCounter 
-                end={typeof metric.value === 'number' ? metric.value : 0} 
-                suffix={metric.suffix} 
+              <AnimatedCounter
+                end={typeof metric.value === 'number' ? metric.value : 0}
+                suffix={metric.suffix}
                 prefix={metric.prefix}
               />
               <div className="mt-4 flex items-center gap-3">
                 <span className="text-lg text-muted-foreground">{metric.label}</span>
-                <span className={`text-xs font-mono px-2 py-0.5 border border-foreground/10 ${
-                  metric.category === "Safety" ? "text-green-600" : "text-foreground/50"
-                }`}>
+                <span className={`text-xs font-mono px-2 py-0.5 border border-foreground/10 ${metric.category === "Safety" ? "text-green-600" : "text-foreground/50"
+                  }`}>
                   {metric.category}
                 </span>
               </div>
@@ -159,9 +156,8 @@ export function MetricsSection() {
 
         {/* Metric definition note */}
         <div
-          className={`mt-12 text-sm text-muted-foreground transition-all duration-700 delay-300 ${
-            isVisible ? "opacity-100" : "opacity-0"
-          }`}
+          className={`mt-12 text-sm text-muted-foreground transition-all duration-700 delay-300 ${isVisible ? "opacity-100" : "opacity-0"
+            }`}
         >
           Recovery = authoritatively confirmed by provider webhooks, not by action dispatch. Recovery is declared only when financial state proves it.
         </div>

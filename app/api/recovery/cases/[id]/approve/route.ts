@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     if (!latestDec) {
       return NextResponse.json(
         { error: "no prior decision found" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -103,9 +103,7 @@ export async function POST(request: Request) {
       .maybeSingle();
     if (newDecErr) throw newDecErr;
 
-    const scheduledFor = new Date(
-      Date.now() + 2 * 3600 * 1000
-    ).toISOString();
+    const scheduledFor = new Date(Date.now() + 2 * 3600 * 1000).toISOString();
 
     const { data: newAct, error: actErr } = await supabase
       .from("actions")
@@ -174,13 +172,13 @@ export async function POST(request: Request) {
         actionClass,
         attemptNo: nextAttempt,
       },
-      { headers: { "Cache-Control": "no-store" } }
+      { headers: { "Cache-Control": "no-store" } },
     );
   } catch (err) {
     console.error("[api/recovery/cases/approve] error:", err);
     return NextResponse.json(
       { error: "Failed to approve case" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

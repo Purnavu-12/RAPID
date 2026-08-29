@@ -82,9 +82,8 @@ export function CasesTable({ cases }: { cases: RecoveryCase[] | null }) {
   return (
     <div
       ref={ref}
-      className={`border border-foreground/10 overflow-hidden transition-all duration-700 delay-200 ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      }`}
+      className={`border border-foreground/10 overflow-hidden transition-all duration-700 delay-200 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
     >
       <div className="px-6 py-4 border-b border-foreground/10 flex items-center justify-between">
         <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">

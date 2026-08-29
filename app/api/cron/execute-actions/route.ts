@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (dueNow) {
       return NextResponse.json(
         { error: "due=true is dev-only." },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const provided = request.headers.get("x-rapid-cron-secret");
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         error: "Execution failed",
         detail: e instanceof Error ? e.message : String(e),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

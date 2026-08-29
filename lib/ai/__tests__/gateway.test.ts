@@ -29,7 +29,7 @@ function validLlmResponse(
     evidenceCodes: string[];
     recommendedActionClass: string;
     reasonSummary: string;
-  }> = {}
+  }> = {},
 ): string {
   return JSON.stringify({
     rootCause: "Insufficient Funds",
@@ -71,7 +71,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       validLlmResponse(),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).not.toBeNull();
     expect(result!.rootCause).toBe("Insufficient Funds");
@@ -92,7 +92,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       validLlmResponse({ rootCause: "Made Up Cause" }),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
@@ -102,7 +102,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       validLlmResponse({ recommendedActionClass: "INVENT_NEW_ACTION" }),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
@@ -112,7 +112,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       "not json at all {{{",
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
@@ -122,7 +122,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       JSON.stringify({ rootCause: "Insufficient Funds" }),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
@@ -132,7 +132,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       validLlmResponse({ confidence: 1.5 }),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
@@ -142,17 +142,19 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       validLlmResponse({ confidence: -0.1 }),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
 
   it("rejects non-array evidenceCodes", () => {
     const result = validateOutput(
-      validLlmResponse({ evidenceCodes: "not_an_array" as unknown as string[] }),
+      validLlmResponse({
+        evidenceCodes: "not_an_array" as unknown as string[],
+      }),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
@@ -162,7 +164,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       validLlmResponse({ reasonSummary: "x".repeat(501) }),
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     expect(result).toBeNull();
   });
@@ -173,7 +175,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
         validLlmResponse({ rootCause: cause }),
         modelVersion,
         promptVersion,
-        latencyMs
+        latencyMs,
       );
       expect(result).not.toBeNull();
       expect(result!.rootCause).toBe(cause);
@@ -186,7 +188,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
         validLlmResponse({ recommendedActionClass: action }),
         modelVersion,
         promptVersion,
-        latencyMs
+        latencyMs,
       );
       expect(result).not.toBeNull();
       expect(result!.recommendedActionClass).toBe(action);
@@ -198,7 +200,7 @@ describe("validateOutput (§29.2 schema validation + §4.4 AI constraints)", () 
       "```json\n" + validLlmResponse() + "\n```",
       modelVersion,
       promptVersion,
-      latencyMs
+      latencyMs,
     );
     // The current implementation does NOT strip fences â€” this documents
     // that raw ```json fences cause rejection. If we add stripping later,
@@ -282,28 +284,33 @@ describe("diagnoseAmbiguous fail-safe behavior (§4.7)", () => {
     expect(result).toBeNull();
   });
 
-  it("returns null on timeout (§4.7 never fail open)", { timeout: 6000 }, async () => {
-    process.env.POOLSIDE_API_KEY = "test-key";
-    // Simulate a timeout: mock respects AbortController signal
-    mockFetch.mockImplementationOnce((_url, init) => {
-      return new Promise((_, reject) => {
-        init?.signal?.addEventListener("abort", () => {
-          reject(new DOMException("The operation was aborted", "AbortError"));
+  it(
+    "returns null on timeout (§4.7 never fail open)",
+    { timeout: 6000 },
+    async () => {
+      process.env.POOLSIDE_API_KEY = "test-key";
+      // Simulate a timeout: mock respects AbortController signal
+      mockFetch.mockImplementationOnce((_url, init) => {
+        return new Promise((_, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            reject(new DOMException("The operation was aborted", "AbortError"));
+          });
         });
       });
-    });
 
-    const ctx: DiagnosisContext = {
-      failureCode: "ambiguous",
-      failureReason: "",
-      amountMinor: 59900,
-      currency: "INR",
-      attemptCount: 1,
-    };
+      const ctx: DiagnosisContext = {
+        failureCode: "ambiguous",
+        failureReason: "",
+        amountMinor: 59900,
+        currency: "INR",
+        attemptCount: 1,
+      };
 
-    // Use a short timeout for the test
-    const result = await diagnoseAmbiguous(ctx, { timeoutMs: 100 });
-    expect(result).toBeNull();  });
+      // Use a short timeout for the test
+      const result = await diagnoseAmbiguous(ctx, { timeoutMs: 100 });
+      expect(result).toBeNull();
+    },
+  );
 
   it("returns null when model returns non-JSON (§29.2 schema validation)", async () => {
     process.env.POOLSIDE_API_KEY = "test-key";

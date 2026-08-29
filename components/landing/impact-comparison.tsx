@@ -138,7 +138,7 @@ export function ImpactComparison({
       id="impact"
       className="relative py-24 lg:py-32 border-t border-foreground/10"
     >
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-16">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
@@ -146,18 +146,16 @@ export function ImpactComparison({
             Incremental Recovery Measurement (§43)
           </span>
           <h2
-            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
+            className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
           >
             Measurable lift.
             <br />
             Not just automation.
           </h2>
           <p
-            className={`mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed transition-all duration-700 delay-100 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
+            className={`mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
           >
             The revenue difference between RAPID running and a passive baseline
             is the real value — not the raw recovery number alone. Below is the
@@ -167,9 +165,8 @@ export function ImpactComparison({
 
         {/* Comparison table */}
         <div
-          className={`transition-all duration-700 delay-200 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
+          className={`transition-all duration-700 delay-200 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
         >
           <div className="border border-foreground/10">
             {/* Table header */}
@@ -248,9 +245,8 @@ export function ImpactComparison({
 
           {/* Footer note */}
           <div
-            className={`mt-8 text-center text-sm text-muted-foreground transition-all duration-700 delay-300 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
+            className={`mt-8 text-center text-sm text-muted-foreground transition-all duration-700 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
           >
             Data from the §43 with-vs-without lab (dev).{" "}
             <a

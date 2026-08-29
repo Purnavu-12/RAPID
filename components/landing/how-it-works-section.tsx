@@ -103,7 +103,7 @@ export function HowItWorksSection() {
         }} />
       </div>
 
-      <div className="relative z-10 max-w-87.5 mx-auto px-6 lg:px-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-background/50 mb-6">

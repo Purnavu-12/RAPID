@@ -48,13 +48,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { ok: true, runId: result.runId, report: result.report },
-      { headers: { "Cache-Control": "no-store" } }
+      { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {
     console.error("[api/dev/proof] error:", e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : String(e) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -87,21 +87,23 @@ export async function GET(request: Request) {
   try {
     if (history) {
       const runs = await getProofHistory(supabase, merchantId);
-      return NextResponse.json({ runs }, {
-        headers: { "Cache-Control": "no-store" }
-      });
+      return NextResponse.json(
+        { runs },
+        {
+          headers: { "Cache-Control": "no-store" },
+        },
+      );
     }
 
     const latest = await getLatestProof(supabase, merchantId);
-    return NextResponse.json(
-      latest ?? { runId: null, report: null },
-      { headers: { "Cache-Control": "no-store" } }
-    );
+    return NextResponse.json(latest ?? { runId: null, report: null }, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (e) {
     console.error("[api/dev/proof] error:", e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : String(e) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

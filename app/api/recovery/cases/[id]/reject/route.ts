@@ -108,13 +108,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { ok: true, caseId, status: "CANCELLED", reason: body.reason },
-      { headers: { "Cache-Control": "no-store" } }
+      { headers: { "Cache-Control": "no-store" } },
     );
   } catch (err) {
     console.error("[api/recovery/cases/reject] error:", err);
     return NextResponse.json(
       { error: "Failed to reject case" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -54,15 +54,71 @@ export interface ScenarioSpec {
  *   subscription_failure→ Insufficient Funds → CREATE_PAYMENT_LINK (P=.84)
  */
 export const SCENARIOS: ScenarioSpec[] = [
-  { scenario: "payment_failure_soft",      code: "insufficient_funds",    source: "issuer",  reason: "Insufficient Funds",     amount: 59900 },
-  { scenario: "payment_failure_hard",      code: "card_declined",         source: "issuer",  reason: "Card Declined",          amount: 59900 },
-  { scenario: "gateway_timeout",             code: "gateway_timeout",       source: "gateway", reason: "Gateway Timeout",       amount: 59900 },
-  { scenario: "insufficient_funds",          code: "insufficient_funds",    source: "issuer",  reason: "Insufficient Funds",     amount: 59900 },
-  { scenario: "expired_instrument",          code: "card_expired",         source: "issuer",  reason: "Card Expired",         amount: 59900 },
-  { scenario: "authentication_failure",      code: "authentication_failure", source: "issuer", reason: "Authentication Failed", amount: 59900 },
-  { scenario: "subscription_failure",        code: "insufficient_funds",    source: "issuer",  reason: "Insufficient Funds",     amount: 59900, subscription: true },
-  { scenario: "provider_duplicate_event",    code: "duplicate",             source: "issuer",  reason: "Duplicate Transaction",  amount: 59900 },
-  { scenario: "high_value",                   code: "insufficient_funds",    source: "issuer",  reason: "Insufficient Funds",     amount: 750_000, highValue: true },
+  {
+    scenario: "payment_failure_soft",
+    code: "insufficient_funds",
+    source: "issuer",
+    reason: "Insufficient Funds",
+    amount: 59900,
+  },
+  {
+    scenario: "payment_failure_hard",
+    code: "card_declined",
+    source: "issuer",
+    reason: "Card Declined",
+    amount: 59900,
+  },
+  {
+    scenario: "gateway_timeout",
+    code: "gateway_timeout",
+    source: "gateway",
+    reason: "Gateway Timeout",
+    amount: 59900,
+  },
+  {
+    scenario: "insufficient_funds",
+    code: "insufficient_funds",
+    source: "issuer",
+    reason: "Insufficient Funds",
+    amount: 59900,
+  },
+  {
+    scenario: "expired_instrument",
+    code: "card_expired",
+    source: "issuer",
+    reason: "Card Expired",
+    amount: 59900,
+  },
+  {
+    scenario: "authentication_failure",
+    code: "authentication_failure",
+    source: "issuer",
+    reason: "Authentication Failed",
+    amount: 59900,
+  },
+  {
+    scenario: "subscription_failure",
+    code: "insufficient_funds",
+    source: "issuer",
+    reason: "Insufficient Funds",
+    amount: 59900,
+    subscription: true,
+  },
+  {
+    scenario: "provider_duplicate_event",
+    code: "duplicate",
+    source: "issuer",
+    reason: "Duplicate Transaction",
+    amount: 59900,
+  },
+  {
+    scenario: "high_value",
+    code: "insufficient_funds",
+    source: "issuer",
+    reason: "Insufficient Funds",
+    amount: 750_000,
+    highValue: true,
+  },
 ];
 
 /** Scenarios recoverable via a payment link (the WITH/WITHOUT cohort pool). */
@@ -73,8 +129,14 @@ export const RECOVERABLE_SCENARIOS = [
 ];
 
 const CUSTOMER_REFS = [
-  "cust_1001", "cust_1002", "cust_1003", "cust_1004",
-  "cust_1005", "cust_1006", "cust_1007", "cust_1008",
+  "cust_1001",
+  "cust_1002",
+  "cust_1003",
+  "cust_1004",
+  "cust_1005",
+  "cust_1006",
+  "cust_1007",
+  "cust_1008",
 ];
 
 function paymentRef(orderId: string): string {
@@ -94,7 +156,7 @@ function sign(raw: string): string {
  */
 export async function emitFailure(
   scenario: ScenarioSpec,
-  customerRef: string
+  customerRef: string,
 ): Promise<{
   scenario: string;
   orderId: string;
@@ -179,7 +241,14 @@ export async function emitRecovery(orderId: string): Promise<{
     .limit(1)
     .maybeSingle();
 
-  if (!re) return { caseId: null, paymentLinkId: "", shortUrl: "", outcome: undefined, ok: false };
+  if (!re)
+    return {
+      caseId: null,
+      paymentLinkId: "",
+      shortUrl: "",
+      outcome: undefined,
+      ok: false,
+    };
 
   const amount = Number(re.amount_minor) || 0;
   const currency = String(re.currency || "INR").toUpperCase();
@@ -193,9 +262,10 @@ export async function emitRecovery(orderId: string): Promise<{
     .order("completed_at", { ascending: false })
     .maybeSingle();
   let { linkId, shortUrl } = (() => {
-    const res = (act?.result ?? null) as
-      | { payment_link_id?: string; short_url?: string }
-      | null;
+    const res = (act?.result ?? null) as {
+      payment_link_id?: string;
+      short_url?: string;
+    } | null;
     return { linkId: res?.payment_link_id ?? null, shortUrl: res?.short_url };
   })();
 
@@ -260,7 +330,7 @@ export interface CaseDetails {
 /** Read the engine's diagnosis + decision + current case status for a case. */
 export async function readCaseDetails(
   supabase: SupabaseClient,
-  caseId: string
+  caseId: string,
 ): Promise<CaseDetails> {
   const { data: diag } = await supabase
     .from("diagnoses")
@@ -311,7 +381,7 @@ export interface ScenarioResult {
  * *all* types, with the real Razorpay resources surfaced on each record.
  */
 export async function runScenarioSuite(
-  supabase: SupabaseClient
+  supabase: SupabaseClient,
 ): Promise<{ created: ScenarioResult[] }> {
   const created: ScenarioResult[] = [];
   for (let i = 0; i < SCENARIOS.length; i++) {
@@ -353,7 +423,13 @@ export async function runScenarioSuite(
 
 export interface WithVsWithoutResult {
   without: { cases: number; recovered: number; recoveryRate: number };
-  with: { cases: number; recovered: number; recoveryRate: number; revenueRecoveredMinor: number; revenueAtRiskMinor: number };
+  with: {
+    cases: number;
+    recovered: number;
+    recoveryRate: number;
+    revenueRecoveredMinor: number;
+    revenueAtRiskMinor: number;
+  };
   incremental: { recoveryRateLift: number; revenueRecoveredMinor: number };
   created: ScenarioResult[];
 }
@@ -371,12 +447,12 @@ export interface WithVsWithoutResult {
 export async function runWithVsWithout(
   supabase: SupabaseClient,
   merchantId: string,
-  count: number
+  count: number,
 ): Promise<WithVsWithoutResult> {
   const n = Math.max(2, Math.min(50, count));
   const half = Math.floor(n / 2);
   const recoverable = RECOVERABLE_SCENARIOS.map(
-    (name) => SCENARIOS.find((s) => s.scenario === name)!
+    (name) => SCENARIOS.find((s) => s.scenario === name)!,
   ).filter(Boolean);
 
   const created: ScenarioResult[] = [];
@@ -399,7 +475,12 @@ export async function runWithVsWithout(
       status: d?.status ?? null,
       probability: d?.probability ?? null,
     });
-    if (i >= half) withCohort.push({ caseId: r.caseId ?? "", orderId: r.orderId, amount: sc.amount });
+    if (i >= half)
+      withCohort.push({
+        caseId: r.caseId ?? "",
+        orderId: r.orderId,
+        amount: sc.amount,
+      });
   }
 
   // WITH-engine cohort: execute (real payment links) then confirm ~84% paid.
@@ -430,12 +511,16 @@ export async function runWithVsWithout(
     with: {
       cases: withCases,
       recovered: withRecovered,
-      recoveryRate: withCases ? Math.round((withRecovered / withCases) * 100) : 0,
+      recoveryRate: withCases
+        ? Math.round((withRecovered / withCases) * 100)
+        : 0,
       revenueRecoveredMinor,
       revenueAtRiskMinor,
     },
     incremental: {
-      recoveryRateLift: withCases ? Math.round((withRecovered / withCases) * 100) : 0,
+      recoveryRateLift: withCases
+        ? Math.round((withRecovered / withCases) * 100)
+        : 0,
       revenueRecoveredMinor,
     },
     created,
@@ -449,7 +534,7 @@ export async function runWithVsWithout(
  *  touched — §48 replay/audit safety. */
 export async function cleanSimRows(
   supabase: SupabaseClient,
-  merchantId: string
+  merchantId: string,
 ): Promise<{ deleted: number }> {
   const isDevEvent = (ev: unknown): ev is string =>
     typeof ev === "string" &&
@@ -478,7 +563,10 @@ export async function cleanSimRows(
   await supabase.from("diagnoses").delete().in("risk_event_id", ids);
   await supabase.from("decisions").delete().in("risk_event_id", ids);
   if (eventIds.length) {
-    await supabase.from("provider_events").delete().in("external_event_id", eventIds);
+    await supabase
+      .from("provider_events")
+      .delete()
+      .in("external_event_id", eventIds);
   }
   // §27 audit ledger cleanup — audit events are append-only but we clean
   // dev-generated ones (entity_id matches case IDs) in the dev lab.
@@ -526,7 +614,7 @@ export interface ProofParams {
 export async function runProof(
   supabase: SupabaseClient,
   merchantId: string,
-  params: ProofParams = { count: 20, payRate: 0.84 }
+  params: ProofParams = { count: 20, payRate: 0.84 },
 ): Promise<{ runId: string; report: ProofReport }> {
   // Clean dev rows from any previous run.
   await cleanSimRows(supabase, merchantId);
@@ -565,8 +653,11 @@ export async function runProof(
     : Math.max(
         0,
         (actionCounts?.length ?? 0) -
-          new Set(actionCounts?.map((a: { idempotency_key: string }) => a.idempotency_key))
-            .size
+          new Set(
+            actionCounts?.map(
+              (a: { idempotency_key: string }) => a.idempotency_key,
+            ),
+          ).size,
       );
 
   // Median time-to-recovery from outcomes.
@@ -587,8 +678,7 @@ export async function runProof(
       const detectedAt = re?.detected_at;
       if (!detectedAt) continue;
       const ttr =
-        (new Date(o.recovered_at).getTime() -
-          new Date(detectedAt).getTime()) /
+        (new Date(o.recovered_at).getTime() - new Date(detectedAt).getTime()) /
         1000;
       if (ttr >= 0) ttrs.push(ttr);
     }
@@ -630,7 +720,7 @@ export async function runProof(
 /** Fetch the latest proof run report for a merchant. */
 export async function getLatestProof(
   supabase: SupabaseClient,
-  merchantId: string
+  merchantId: string,
 ): Promise<{ runId: string; report: ProofReport } | null> {
   const { data, error } = await supabase
     .from("proof_runs")
@@ -650,7 +740,7 @@ export async function getLatestProof(
 /** Fetch all proof runs for a merchant (history). */
 export async function getProofHistory(
   supabase: SupabaseClient,
-  merchantId: string
+  merchantId: string,
 ): Promise<Array<{ runId: string; createdAt: string; report: ProofReport }>> {
   const { data, error } = await supabase
     .from("proof_runs")

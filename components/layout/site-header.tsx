@@ -36,13 +36,12 @@ export function SiteHeader() {
 
   return (
     <header
-      className={`fixed z-50 transition-all duration-500 ${isScrolled ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
-        }`}
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
     >
       <nav
         className={`mx-auto transition-all duration-500 ${isScrolled || isMobileMenuOpen
-          ? "bg-background/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-75"
-          : "bg-transparent max-w-87.5"
+          ? "bg-background/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-7xl mt-4 mb-4"
+          : "bg-transparent max-w-7xl"
           }`}
       >
         <div

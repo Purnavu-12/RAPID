@@ -47,7 +47,7 @@ export async function GET(request: Request) {
         const { data: attempts } = await supabase
           .from("decisions")
           .select(
-            "attempt_no, action_class, root_cause:diagnoses!inner(root_cause), probability_of_success, reason_codes"
+            "attempt_no, action_class, root_cause:diagnoses!inner(root_cause), probability_of_success, reason_codes",
           )
           .eq("risk_event_id", c.case_id)
           .order("attempt_no", { ascending: true });
@@ -66,17 +66,20 @@ export async function GET(request: Request) {
           attempts: attempts ?? [],
           createdAt: c.detected_at ?? c.updated_at,
         };
-      })
+      }),
     );
 
-    return NextResponse.json({ cases: enriched }, {
-      headers: { "Cache-Control": "no-store" },
-    });
+    return NextResponse.json(
+      { cases: enriched },
+      {
+        headers: { "Cache-Control": "no-store" },
+      },
+    );
   } catch (err) {
     console.error("[api/recovery/escalated] error:", err);
     return NextResponse.json(
       { error: "Failed to fetch escalated cases" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

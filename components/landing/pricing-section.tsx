@@ -72,9 +72,8 @@ export function PricingSection() {
           {plans.map((plan, idx) => (
             <div
               key={plan.name}
-              className={`relative p-8 lg:p-12 bg-background ${
-                plan.popular ? "md:-my-4 md:py-12 lg:py-16 border-2 border-foreground" : ""
-              }`}
+              className={`relative p-8 lg:p-12 bg-background ${plan.popular ? "md:-my-4 md:py-12 lg:py-16 border-2 border-foreground" : ""
+                }`}
             >
               {plan.popular && (
                 <span className="absolute -top-3 left-8 px-3 py-1 bg-foreground text-primary-foreground text-xs font-mono uppercase tracking-widest">
@@ -117,11 +116,10 @@ export function PricingSection() {
 
               {/* CTA */}
               <button
-                className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${
-                  plan.popular
+                className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${plan.popular
                     ? "bg-foreground text-primary-foreground hover:bg-foreground/90"
                     : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"
-                }`}
+                  }`}
               >
                 {plan.cta}
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

@@ -68,9 +68,8 @@ export function TestimonialsSection() {
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-20">
           <div className="lg:col-span-8">
             <blockquote
-              className={`transition-all duration-300 ${
-                isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-              }`}
+              className={`transition-all duration-300 ${isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+                }`}
             >
               <p className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-tight text-foreground">
                 &ldquo;{activeTestimonial.quote}&rdquo;
@@ -79,9 +78,8 @@ export function TestimonialsSection() {
 
             {/* Author */}
             <div
-              className={`mt-12 flex items-center gap-6 transition-all duration-300 delay-100 ${
-                isAnimating ? "opacity-0" : "opacity-100"
-              }`}
+              className={`mt-12 flex items-center gap-6 transition-all duration-300 delay-100 ${isAnimating ? "opacity-0" : "opacity-100"
+                }`}
             >
               <div className="w-16 h-16 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center">
                 <span className="font-display text-2xl text-foreground">
@@ -100,9 +98,8 @@ export function TestimonialsSection() {
           {/* Metric Highlight */}
           <div className="lg:col-span-4 flex flex-col justify-center">
             <div
-              className={`p-8 border border-foreground/10 transition-all duration-300 ${
-                isAnimating ? "opacity-0 scale-95" : "opacity-100 scale-100"
-              }`}
+              className={`p-8 border border-foreground/10 transition-all duration-300 ${isAnimating ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                }`}
             >
               <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase block mb-4">
                 Key Result
@@ -124,11 +121,10 @@ export function TestimonialsSection() {
                       setIsAnimating(false);
                     }, 300);
                   }}
-                  className={`h-2 transition-all duration-300 ${
-                    idx === activeIndex
+                  className={`h-2 transition-all duration-300 ${idx === activeIndex
                       ? "w-8 bg-foreground"
                       : "w-2 bg-foreground/20 hover:bg-foreground/40"
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -142,7 +138,7 @@ export function TestimonialsSection() {
           </p>
         </div>
       </div>
-      
+
       {/* Full-width marquee outside container */}
       <div className="w-full">
         <div className="flex gap-16 items-center marquee">

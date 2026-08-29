@@ -55,10 +55,9 @@ export function SimulationLab() {
         mode === "scenarios"
           ? `Ran ${SCENARIOS.length} payment-failure scenarios through the engine.`
           : mode === "withvswithout"
-          ? `WITH-vs-WITHOUT comparison complete: engine recovered ${
-              (json as WithVsWithoutResult).with?.recovered ?? 0
+            ? `WITH-vs-WITHOUT comparison complete: engine recovered ${(json as WithVsWithoutResult).with?.recovered ?? 0
             } of ${(json as WithVsWithoutResult).with?.cases ?? 0} cases.`
-          : `Reset simulation: removed ${(json as { deleted: number }).deleted ?? 0} dev rows.`
+            : `Reset simulation: removed ${(json as { deleted: number }).deleted ?? 0} dev rows.`
       );
     } catch (e) {
       setStatus(`Simulation unavailable: ${e instanceof Error ? e.message : String(e)}`);

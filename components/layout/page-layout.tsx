@@ -23,7 +23,7 @@ export function PageLayout({
     <div className="relative min-h-screen overflow-x-hidden noise-overlay">
       {showHeader && <SiteHeader />}
       
-      <main className="relative z-10 pt-20 lg:pt-24">
+      <main className="relative z-10">
         {children}
       </main>
       

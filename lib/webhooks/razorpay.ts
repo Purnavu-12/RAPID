@@ -30,7 +30,11 @@
  */
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { makeDecision } from "@/lib/policy/engine";
-import { diagnoseAmbiguous, DiagnosisContext, getAiMetadata } from "@/lib/ai/gateway";
+import {
+  diagnoseAmbiguous,
+  DiagnosisContext,
+  getAiMetadata,
+} from "@/lib/ai/gateway";
 import { appendAudit, clearAuditCache } from "@/lib/audit/ledger";
 import {
   createHmac,
@@ -78,7 +82,7 @@ export async function resolveMerchantId(supabase: SupabaseClient) {
 export function verifyRazorpaySignature(
   rawBody: string,
   signature: string | null | undefined,
-  secret: string
+  secret: string,
 ): boolean {
   if (!signature) return false;
   const expected = createHmac("sha256", secret)
@@ -147,16 +151,27 @@ function razorpayEntity(payload: unknown): PaymentEntity {
 }
 
 /** Map a Razorpay decline into a normalized failure code (§11.1 rule-first). */
-export function normalizeFailureCode(errorCode: string, errorReason: string): string {
+export function normalizeFailureCode(
+  errorCode: string,
+  errorReason: string,
+): string {
   const haystack = `${errorCode} ${errorReason}`.toLowerCase();
   if (!haystack || haystack === " ") return "ambiguous";
   if (haystack.includes("insufficient") || haystack.includes("balance"))
     return "insufficient_funds";
   if (haystack.includes("expired") || haystack.includes("card_expired"))
     return "card_expired";
-  if (haystack.includes("cvv") || haystack.includes("security") || haystack.includes("authentication"))
+  if (
+    haystack.includes("cvv") ||
+    haystack.includes("security") ||
+    haystack.includes("authentication")
+  )
     return "authentication_failure";
-  if (haystack.includes("timeout") || haystack.includes("timed out") || haystack.includes("unavailable"))
+  if (
+    haystack.includes("timeout") ||
+    haystack.includes("timed out") ||
+    haystack.includes("unavailable")
+  )
     return "issuer_timeout";
   if (haystack.includes("duplicate") || haystack.includes("processing"))
     return "duplicate_transaction";
@@ -212,7 +227,7 @@ export function diagnose(failureCode: string): {
 export function buildIdempotencyKey(
   riskEventId: string,
   actionClass: string,
-  attemptNo = 1
+  attemptNo = 1,
 ): string {
   return `case:${riskEventId}:${actionClass}:${attemptNo}`;
 }
@@ -234,7 +249,10 @@ function isPgUniqueViolation(err: { code?: string; message?: string }) {
 }
 
 /** Parse a Razorpay envelope into a normalized event (§8 envelope + §10.2). */
-function parseRazorpayEvent(rawBody: string, merchantId: string): NormalizedEvent {
+function parseRazorpayEvent(
+  rawBody: string,
+  merchantId: string,
+): NormalizedEvent {
   const ev = JSON.parse(rawBody) as {
     event?: string;
     event_type?: string;
@@ -257,12 +275,13 @@ function parseRazorpayEvent(rawBody: string, merchantId: string): NormalizedEven
   const amountMinor = Number(entity.amount ?? 0);
   const currency = String(entity.currency || "INR").toUpperCase();
   const orderId = (entity.order_id as string | undefined) || entity.order;
-  const paymentId = (entity.id as string | undefined) || orderId || externalEventId;
+  const paymentId =
+    (entity.id as string | undefined) || orderId || externalEventId;
   const sourceRef = orderId || paymentId;
 
   const errorCode = String(entity.error_code || entity.code || "");
   const errorReason = String(
-    entity.error_reason || entity.error_description || ""
+    entity.error_reason || entity.error_description || "",
   );
   const failureCode = normalizeFailureCode(errorCode, errorReason);
 
@@ -270,7 +289,12 @@ function parseRazorpayEvent(rawBody: string, merchantId: string): NormalizedEven
   if (eventType.toLowerCase().includes("chargeback")) riskType = "chargeback";
   else if (entity.subscription_id || riskType === "subscription_failure")
     riskType = "subscription_failure";
-  else if (failureCode === "ambiguous" && String(entity.error_reason || "").toLowerCase().includes("abandon"))
+  else if (
+    failureCode === "ambiguous" &&
+    String(entity.error_reason || "")
+      .toLowerCase()
+      .includes("abandon")
+  )
     riskType = "checkout_abandonment";
 
   const customerRef =
@@ -314,7 +338,7 @@ function parseRazorpayEvent(rawBody: string, merchantId: string): NormalizedEven
 async function ingestFailure(
   supabase: SupabaseClient,
   ev: NormalizedEvent,
-  payloadHash: string
+  payloadHash: string,
 ) {
   // §26.3 provider_events — audit + idempotency guard (§41/§42 dedup).
   const { error: peErr } = await supabase.from("provider_events").insert({
@@ -450,8 +474,10 @@ async function ingestFailure(
       confidence: diag.confidence,
       method: diag.method,
       evidence_codes: diag.evidenceCodes,
-      model_version: diag.method === "llm" ? aiMetadata.model_version : undefined,
-      prompt_version: diag.method === "llm" ? aiMetadata.prompt_version : undefined,
+      model_version:
+        diag.method === "llm" ? aiMetadata.model_version : undefined,
+      prompt_version:
+        diag.method === "llm" ? aiMetadata.prompt_version : undefined,
     },
   });
 
@@ -479,7 +505,7 @@ async function ingestFailure(
   if (decErr) throw decErr;
 
   const scheduledFor = new Date(
-    new Date(ev.occurredAt).getTime() + 2 * 3600 * 1000
+    new Date(ev.occurredAt).getTime() + 2 * 3600 * 1000,
   ).toISOString();
   const { data: act, error: actErr } = await supabase
     .from("actions")
@@ -489,7 +515,11 @@ async function ingestFailure(
       merchant_id: ev.merchantId,
       action_class: decision.actionClass,
       status: "SCHEDULED", // §13 action lifecycle
-      idempotency_key: buildIdempotencyKey(riskEventId, decision.actionClass, 1), // §4.2 / §28
+      idempotency_key: buildIdempotencyKey(
+        riskEventId,
+        decision.actionClass,
+        1,
+      ), // §4.2 / §28
       scheduled_for: scheduledFor,
       provider_ref: `plink_${ev.sourceRef}`,
       result: {
@@ -551,7 +581,11 @@ async function ingestFailure(
     data: {
       action_class: decision.actionClass,
       scheduled_for: scheduledFor,
-      idempotency_key: buildIdempotencyKey(riskEventId, decision.actionClass, 1),
+      idempotency_key: buildIdempotencyKey(
+        riskEventId,
+        decision.actionClass,
+        1,
+      ),
     },
   });
 
@@ -593,7 +627,8 @@ async function ingestRecovery(supabase: SupabaseClient, ev: NormalizedEvent) {
     .eq("status", "RECOVERED")
     .maybeSingle();
   if (outErr) throw outErr;
-  if (existing) return { outcome: "RECOVERED", deduped: true, caseId: re.risk_event_id };
+  if (existing)
+    return { outcome: "RECOVERED", deduped: true, caseId: re.risk_event_id };
 
   // Link the outcome to the scheduled action so the audit trail is complete (§23).
   const { data: act } = await supabase
@@ -647,9 +682,11 @@ async function ingestRecovery(supabase: SupabaseClient, ev: NormalizedEvent) {
 export async function ingestEvent(
   supabase: SupabaseClient,
   ev: NormalizedEvent,
-  rawBody: string
+  rawBody: string,
 ): Promise<WebhookResult> {
-  const payloadHash = createHash("sha256").update(rawBody, "utf8").digest("hex");
+  const payloadHash = createHash("sha256")
+    .update(rawBody, "utf8")
+    .digest("hex");
 
   if (RECOVERY_CONFIRM_EVENTS.has(ev.eventType)) {
     const res = await ingestRecovery(supabase, ev);
@@ -702,12 +739,12 @@ export async function ingestEvent(
  */
 export async function handleRazorpayWebhook(
   rawBody: string,
-  signature: string | null | undefined
+  signature: string | null | undefined,
 ): Promise<WebhookResult> {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
   if (!secret) {
     throw new Error(
-      "RAZORPAY_WEBHOOK_SECRET is not configured. Set it in .env.local (see .env.example)."
+      "RAZORPAY_WEBHOOK_SECRET is not configured. Set it in .env.local (see .env.example).",
     );
   }
   if (!verifyRazorpaySignature(rawBody, signature, secret)) {

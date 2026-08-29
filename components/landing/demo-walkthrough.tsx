@@ -153,8 +153,8 @@ export function DemoWalkthrough() {
   const recentCases = data?.cases || [];
 
   return (
-    <section className="py-16 lg:py-24 min-h-screen bg-background">
-      <div className="max-w-87.5 mx-auto px-6 lg:px-12">
+    <section className="pt-24 lg:pt-32 pb-16 lg:pb-24 min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="mb-12">
           <Link

@@ -21,15 +21,12 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 function canonicalize(data: unknown): string {
   if (data === null || data === undefined) return "null";
   if (typeof data !== "object") return JSON.stringify(data);
-  if (Array.isArray(data))
-    return "[" + data.map(canonicalize).join(",") + "]";
+  if (Array.isArray(data)) return "[" + data.map(canonicalize).join(",") + "]";
   const obj = data as Record<string, unknown>;
   const keys = Object.keys(obj).sort();
   return (
     "{" +
-    keys
-      .map((k) => JSON.stringify(k) + ":" + canonicalize(obj[k]))
-      .join(",") +
+    keys.map((k) => JSON.stringify(k) + ":" + canonicalize(obj[k])).join(",") +
     "}"
   );
 }
@@ -95,7 +92,7 @@ export function clearAuditCache() {
  */
 export async function appendAudit(
   supabase: ReturnType<typeof createServerSupabaseClient>,
-  event: AuditEventInput
+  event: AuditEventInput,
 ): Promise<AuditEvent> {
   const occurredAt = event.occurredAt ?? new Date().toISOString();
 
@@ -150,7 +147,7 @@ export async function appendAudit(
     .from("audit_events")
     .insert(insertPayload)
     .select(
-      "audit_id, merchant_id, trace_id, entity_type, entity_id, event_type, actor_type, actor_id, occurred_at, data, prev_hash, hash, created_at"
+      "audit_id, merchant_id, trace_id, entity_type, entity_id, event_type, actor_type, actor_id, occurred_at, data, prev_hash, hash, created_at",
     )
     .maybeSingle();
 
@@ -181,7 +178,7 @@ export async function appendAudit(
 export async function fetchAuditChain(
   supabase: ReturnType<typeof createServerSupabaseClient>,
   merchantId: string,
-  entityId: string
+  entityId: string,
 ): Promise<AuditEvent[]> {
   const { data, error } = await supabase
     .from("audit_events")
