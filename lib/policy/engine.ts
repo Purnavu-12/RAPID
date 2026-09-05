@@ -189,7 +189,13 @@ export async function loadActivePolicy(
   if (error || !data || !data.rules) return null;
   const r = data.rules as Partial<RecoveryPolicy>;
   // Structural guard — only accept a well-formed policy blob.
-  if (!r.label || !r.probabilities) return null;
+  if (
+    !r.label ||
+    !r.probabilities ||
+    !Array.isArray(r.retryable_root_causes) ||
+    !Array.isArray(r.terminal_root_causes)
+  )
+    return null;
   return r as RecoveryPolicy;
 }
 

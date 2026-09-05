@@ -27,7 +27,7 @@ type SupabaseClient = ReturnType<typeof createServerSupabaseClient>;
  *  The live Razorpay test account rate-limits payment-link creation, so we
  *  never mint a burst of links in a tight loop — keeps both cron execution
  *  and the §43 lab under the limit. */
-const PRODUCER_DELAY_MS = 400;
+const PRODUCER_DELAY_MS = 1500;
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface ExecutedAction {

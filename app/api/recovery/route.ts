@@ -99,11 +99,28 @@ export async function GET() {
     });
     const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
+    // Fetch the daily trend projection (grouped by detection day).
     let tq = supabase.from("recovery_daily_trend").select("*");
     if (merchantId) tq = tq.eq("merchant_id", merchantId);
     const { data: trendRows, error: trendErr } = await tq;
     if (trendErr) throw trendErr;
 
+    // Also fetch recent outcomes by their recovery date, so recoveries are
+    // counted in the day they happened — not just the day the case was detected.
+    // This ensures the 7-day window captures recent RECOVERED cases even if
+    // their original detect_at falls outside the window. We join through
+    // risk_events because outcomes has no merchant_id column directly.
+    const windowStart = dayKey(trendWindow[0]);
+    const { data: outcomeRows, error: outcomeErr } = await supabase
+      .from("outcomes")
+      .select("recovered_at, risk_events!inner(merchant_id)")
+      .eq("risk_events.merchant_id", merchantId ?? "")
+      .eq("status", "RECOVERED")
+      .gte("recovered_at", `${windowStart}T00:00:00`);
+    if (outcomeErr) throw outcomeErr;
+
+    // Merge: start from detection-day counts, then add recoveries by recovery
+    // day so the chart reflects actual recovery activity.
     const byDay = new Map<string, { recoveries: number; at_risk: number }>();
     for (const row of trendRows ?? []) {
       byDay.set(dayKey(new Date(row.day)), {
@@ -111,6 +128,19 @@ export async function GET() {
         at_risk: Number(row.at_risk),
       });
     }
+    // Add recoveries by their recovered_at date (may fall on a different day
+    // than detection).
+    for (const o of outcomeRows ?? []) {
+      if (!o.recovered_at) continue;
+      const key = dayKey(new Date(o.recovered_at));
+      const existing = byDay.get(key);
+      if (existing) {
+        existing.recoveries += 1;
+      } else {
+        byDay.set(key, { recoveries: 1, at_risk: 0 });
+      }
+    }
+
     const trend: TrendPoint[] = trendWindow.map((d) => {
       const v = byDay.get(dayKey(d));
       return {

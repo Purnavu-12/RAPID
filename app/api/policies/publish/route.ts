@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     if (!body.rules || !body.rules.label) {
       return NextResponse.json(
         { error: "rules with a label field are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -57,12 +57,12 @@ export async function POST(request: NextRequest) {
       .from("policy_versions")
       .insert({
         merchant_id: merchantId,
-        version: (rules.version ?? 1),
+        version: rules.version ?? 1,
         status: body.activate ? "active" : "draft",
         rules,
-        created_by: "api",
+        created_by: null,
       })
-      .select("policy_version_id version status created_at")
+      .select("policy_version_id, version, status, created_at")
       .single();
 
     if (error) {
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Unknown error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

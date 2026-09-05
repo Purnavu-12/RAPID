@@ -7,7 +7,7 @@ drop view if exists policy_analytics;
 drop view if exists recovery_cases;
 
 create view recovery_cases as
-select distinct on (re.risk_event_id)
+select
     re.risk_event_id                  as case_id,
     re.merchant_id,
     re.risk_type,
@@ -40,16 +40,34 @@ select distinct on (re.risk_event_id)
     coalesce(o.recovered_at, act.completed_at, re.detected_at) as updated_at
 from risk_events re
 left join customers cust on cust.customer_id = re.customer_id
-left join diagnoses diag on diag.risk_event_id = re.risk_event_id
-left join decisions dec  on dec.risk_event_id = re.risk_event_id and dec.attempt_no = 1
-left join actions act    on act.risk_event_id = re.risk_event_id
-    and act.created_at = (
-        select max(a2.created_at)
-        from actions a2
-        where a2.risk_event_id = re.risk_event_id
-    )
-left join outcomes o     on o.risk_event_id = re.risk_event_id
-order by re.risk_event_id, act.created_at desc
+left join lateral (
+    select d.*
+    from diagnoses d
+    where d.risk_event_id = re.risk_event_id
+    order by d.created_at desc, d.diagnosis_id desc
+    limit 1
+) diag on true
+left join lateral (
+    select d.*
+    from decisions d
+    where d.risk_event_id = re.risk_event_id
+    order by d.attempt_no desc, d.created_at desc
+    limit 1
+) dec on true
+left join lateral (
+    select a.*
+    from actions a
+    where a.risk_event_id = re.risk_event_id
+    order by a.created_at desc, a.action_id desc
+    limit 1
+) act on true
+left join lateral (
+    select o.*
+    from outcomes o
+    where o.risk_event_id = re.risk_event_id
+    order by o.created_at desc, o.outcome_id desc
+    limit 1
+) o on true
 ;
 
 -- §51: recreate policy_analytics (depends on recovery_cases).
@@ -73,6 +91,18 @@ select
         nullif(count(*), 0) * 100.0, 1
     ), 0) as recovery_rate_incl_partial_pct
 from recovery_cases rc
-left join decisions d on d.risk_event_id = rc.case_id
-left join outcomes o on o.risk_event_id = rc.case_id
+left join lateral (
+    select d.*
+    from decisions d
+    where d.risk_event_id = rc.case_id
+    order by d.attempt_no desc, d.created_at desc
+    limit 1
+) d on true
+left join lateral (
+    select o.*
+    from outcomes o
+    where o.risk_event_id = rc.case_id
+    order by o.created_at desc, o.outcome_id desc
+    limit 1
+) o on true
 group by rc.merchant_id, d.policy_version;

@@ -22,7 +22,7 @@ type SupabaseClient = ReturnType<typeof createServerSupabaseClient>;
 
 /** Pacing between provider resource creations to stay under the Razorpay test
  *  account rate limit (§5/§43 lab mints many links in one run). */
-const PRODUCER_DELAY_MS = 400;
+const PRODUCER_DELAY_MS = 1500;
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface ScenarioSpec {
